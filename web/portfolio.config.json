@@ -1,0 +1,31 @@
+{
+  "site": {
+    "name": "Artist Name",
+    "tagline": "Creative Portfolio",
+    "bio": "A multidisciplinary artist and designer working across photography, illustration, and digital media. With a focus on visual storytelling, I create work that explores the intersection of art, culture, and technology.\nCurrently available for freelance projects and collaborations.",
+    "location": "New York, NY",
+    "resume": "/resume.pdf",
+    "contact": {
+      "email": "hello@example.com"
+    },
+    "social": [
+      { "platform": "Instagram", "url": "https://instagram.com" },
+      { "platform": "Dribbble", "url": "https://dribbble.com" },
+      { "platform": "LinkedIn", "url": "https://linkedin.com" }
+    ]
+  },
+  "domain": "mixed",
+  "layout": {
+    "homepage": "grid",
+    "project": "scroll",
+    "navigation": "topbar"
+  },
+  "store": {
+    "enabled": false,
+    "provider": "stripe",
+    "currency": "usd",
+    "layout": "grid",
+    "shipFrom": ""
+  },
+  "deployment": "vercel"
+}

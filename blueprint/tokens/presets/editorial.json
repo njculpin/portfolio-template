@@ -1,0 +1,27 @@
+{
+  "name": "Editorial",
+  "description": "Refined serif typography, warm tones, generous spacing. Inspired by art magazines and gallery catalogs.",
+  "colors": {
+    "black": "#1a1a1a",
+    "white": "#f8f5f0",
+    "accent": "#c45d3e",
+    "gray": {
+      "50": "#faf8f5",
+      "100": "#f2ede6",
+      "200": "#e5ddd3",
+      "300": "#d0c4b5",
+      "400": "#a89888",
+      "500": "#7d6e5e",
+      "600": "#5e5145",
+      "700": "#433a31",
+      "800": "#2a241e",
+      "900": "#1a1714"
+    }
+  },
+  "typography": {
+    "heading": "'Playfair Display', 'Georgia', serif",
+    "body": "'Source Sans 3', 'Helvetica Neue', sans-serif"
+  },
+  "spacing": "spacious",
+  "googleFonts": "Playfair+Display:wght@400;500;700&family=Source+Sans+3:wght@400;500;700"
+}

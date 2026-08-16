@@ -1,0 +1,13 @@
+.socialLinks {
+  display: flex;
+  gap: var(--spacing-md);
+}
+
+.socialLinks__link {
+  color: var(--text-secondary);
+  transition: color 0.2s ease;
+}
+
+.socialLinks__link:hover {
+  color: var(--text-primary);
+}

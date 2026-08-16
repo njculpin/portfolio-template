@@ -1,0 +1,35 @@
+.cartButton {
+  position: relative;
+  background: none;
+  border: none;
+  padding: var(--spacing-2xs);
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: color 0.2s ease;
+}
+
+.cartButton:hover {
+  color: var(--text-primary);
+}
+
+.cartButton__icon {
+  width: 20px;
+  height: 20px;
+}
+
+.cartButton__count {
+  position: absolute;
+  top: -4px;
+  right: -6px;
+  min-width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: var(--font-weight-bold);
+  color: var(--surface-primary);
+  background-color: var(--text-primary);
+  border-radius: var(--radius-full);
+  padding: 0 4px;
+}

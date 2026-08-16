@@ -1,0 +1,20 @@
+{
+  "surface": {
+    "primary": { "$value": "{color.white}" },
+    "secondary": { "$value": "{color.gray.100}" },
+    "inverse": { "$value": "{color.gray.900}" }
+  },
+  "text": {
+    "primary": { "$value": "{color.gray.900}" },
+    "secondary": { "$value": "{color.gray.500}" },
+    "inverse": { "$value": "{color.white}" },
+    "accent": { "$value": "{color.accent}" }
+  },
+  "border": {
+    "default": { "$value": "{color.gray.200}" },
+    "strong": { "$value": "{color.gray.400}" }
+  },
+  "accent": {
+    "primary": { "$value": "{color.accent}" }
+  }
+}

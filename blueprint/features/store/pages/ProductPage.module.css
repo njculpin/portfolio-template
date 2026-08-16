@@ -1,0 +1,33 @@
+.productPage__back {
+  display: inline-block;
+  margin-bottom: var(--spacing-lg);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  transition: color 0.2s ease;
+}
+
+.productPage__back:hover {
+  color: var(--text-primary);
+}
+
+.productPage__notFound {
+  text-align: center;
+  padding: var(--spacing-4xl) 0;
+}
+
+.productPage__notFoundTitle {
+  font-family: var(--font-family-heading);
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  margin-bottom: var(--spacing-lg);
+}
+
+.productPage__notFoundLink {
+  color: var(--text-accent);
+  font-size: var(--font-size-base);
+  transition: opacity 0.2s ease;
+}
+
+.productPage__notFoundLink:hover {
+  opacity: 0.8;
+}

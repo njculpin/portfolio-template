@@ -1,0 +1,6 @@
+npx lint-staged
+
+claude -p "$(cat <<'PROMPT'
+Run the /review skill on all staged changes. If there are issues that should be fixed before committing, exit with a non-zero code. If everything looks good, exit cleanly.
+PROMPT
+)"

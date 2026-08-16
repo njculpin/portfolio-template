@@ -1,0 +1,7 @@
+# Media files are served directly from the portfolio/ directory.
+# Do not use Git LFS by default — it has bandwidth limits on GitHub
+# that will break your site within weeks of active use.
+#
+# If you need LFS for very large repos, uncomment these lines:
+# *.jpg filter=lfs diff=lfs merge=lfs -text
+# *.mp4 filter=lfs diff=lfs merge=lfs -text

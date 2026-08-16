@@ -1,0 +1,27 @@
+.tagFilter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+  margin-bottom: var(--spacing-xl);
+}
+
+.tagFilter__tag {
+  padding: var(--spacing-2xs) var(--spacing-md);
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-full);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.tagFilter__tag:hover {
+  color: var(--text-primary);
+  border-color: var(--border-strong);
+}
+
+.tagFilter__tag--active {
+  color: var(--text-inverse);
+  background-color: var(--text-primary);
+  border-color: var(--text-primary);
+}

@@ -1,0 +1,22 @@
+{
+  "radius": {
+    "sm": { "$value": "4px" },
+    "md": { "$value": "8px" },
+    "lg": { "$value": "12px" },
+    "full": { "$value": "999px" }
+  },
+  "nav": {
+    "height": { "$value": "56px" }
+  },
+  "spacing": {
+    "2xs": { "$value": "0.25rem" },
+    "xs": { "$value": "0.5rem" },
+    "sm": { "$value": "0.75rem" },
+    "md": { "$value": "1rem" },
+    "lg": { "$value": "1.5rem" },
+    "xl": { "$value": "2rem" },
+    "2xl": { "$value": "3rem" },
+    "3xl": { "$value": "4rem" },
+    "4xl": { "$value": "6rem" }
+  }
+}
