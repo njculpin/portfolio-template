@@ -124,6 +124,30 @@ function migrateLegacyContent() {
   }
 }
 
+// Placeholder projects, posts and products, so a new site has something real to
+// look at and the artist can see the shape of a content folder. Only ever seeded
+// when the folder is missing entirely — existing work is never touched.
+function seedContent(name) {
+  const target = contentDir(name)
+  if (fs.existsSync(target)) return
+
+  const source = path.join(BLUEPRINT, 'defaults', name)
+  if (!fs.existsSync(source)) return
+
+  copyDir(source, target)
+  console.log(`[scaffold] Added placeholder content in content/${name}/.`)
+}
+
+function seedContentReadme() {
+  const readme = path.join(CONTENT, 'README.md')
+  if (fs.existsSync(readme)) return
+
+  const source = path.join(BLUEPRINT, 'defaults', 'content-README.md')
+  if (!fs.existsSync(source)) return
+
+  copyFile(source, readme)
+}
+
 // ---------------------------------------------------------------------------
 // Config detection
 // ---------------------------------------------------------------------------
@@ -190,6 +214,8 @@ function collectNavVariants(config) {
 
 function scaffoldWizard() {
   migrateLegacyContent()
+  seedContent('portfolio')
+  seedContentReadme()
   rmDir(path.join(WEB, 'src'))
   ensureDir(path.join(WEB, 'src'))
   ensureDir(path.join(WEB, 'public'))
@@ -408,25 +434,11 @@ function scaffoldFull(config) {
     )
   }
 
-  // 9. Default portfolio content
-  const portfolioDir = contentDir('portfolio')
-  if (!fs.existsSync(portfolioDir)) {
-    copyDir(
-      path.join(BLUEPRINT, 'defaults', 'portfolio'),
-      portfolioDir,
-    )
-  }
-
-  // 9b. Default blog content
-  if (blogEnabled) {
-    const blogDir = contentDir('blog')
-    if (!fs.existsSync(blogDir)) {
-      copyDir(
-        path.join(BLUEPRINT, 'defaults', 'blog'),
-        blogDir,
-      )
-    }
-  }
+  // 9. Placeholder content
+  seedContent('portfolio')
+  if (blogEnabled) seedContent('blog')
+  if (storeEnabled) seedContent('store')
+  seedContentReadme()
 
   // 10. Generate App.tsx
   writeFile(
@@ -557,12 +569,21 @@ export default function App() {
 `
 }
 
+// Every gallery variant renders the same payload; the wrapper only picks one.
+const GALLERY_PROPS = `type GalleryProps = {
+  media: { src: string; alt: string; description?: string }[]
+  projectSlug: string
+  variant?: string
+}
+`
+
 function generateThumbnailGrid(homepageVariant) {
   const name = VARIANT_NAMES[homepageVariant] || 'Grid'
 
-  return `import ${name} from './variants/${name}'
+  return `import type { ComponentProps } from 'react'
+import ${name} from './variants/${name}'
 
-export default function ThumbnailGrid(props) {
+export default function ThumbnailGrid(props: ComponentProps<typeof ${name}>) {
   return <${name} {...props} />
 }
 `
@@ -572,9 +593,10 @@ function generateProjectDetail(projectVariants, defaultVariant) {
   const defaultName = VARIANT_NAMES[defaultVariant] || 'Scroll'
 
   if (projectVariants.length === 1) {
-    return `import ${defaultName} from './variants/${defaultName}'
+    return `import type { ComponentProps } from 'react'
+import ${defaultName} from './variants/${defaultName}'
 
-export default function ProjectDetail(props) {
+export default function ProjectDetail(props: ComponentProps<typeof ${defaultName}>) {
   return <${defaultName} {...props} />
 }
 `
@@ -594,14 +616,11 @@ export default function ProjectDetail(props) {
     })
     .join('\n')
 
-  return `${imports}
+  return `import type { ComponentProps } from 'react'
+${imports}
 
-const VARIANTS = {
-${projectVariants.map((v) => `  '${v}': ${VARIANT_NAMES[v]},`).join('\n')}
-}
-
-export default function ProjectDetail(props) {
-  const layout = props.layout || '${defaultVariant}'
+export default function ProjectDetail(props: ComponentProps<typeof ${defaultName}>) {
+  const layout = props.project.layout || '${defaultVariant}'
 
   switch (layout) {
 ${cases}
@@ -620,7 +639,7 @@ import CartButton from '@/components/Cart/CartButton'
 import styles from './Navigation.module.css'
 
 export default function Navigation() {
-  const { config } = useConfig()
+  const config = useConfig()
   const blogEnabled = config.blog?.enabled
   const storeEnabled = config.store?.enabled
 
@@ -657,8 +676,8 @@ export default function Navigation() {
   if (navType === 'sidebar') {
     return `import Sidebar from './variants/Sidebar'
 
-export default function Navigation(props) {
-  return <Sidebar {...props} />
+export default function Navigation() {
+  return <Sidebar />
 }
 `
   }
@@ -666,8 +685,8 @@ export default function Navigation(props) {
   if (navType === 'overlay') {
     return `import Overlay from './variants/Overlay'
 
-export default function Navigation(props) {
-  return <Overlay {...props} />
+export default function Navigation() {
+  return <Overlay />
 }
 `
   }
@@ -681,7 +700,8 @@ export default function Navigation(props) {
 
 function generateGallery(galleryVariantNames) {
   if (galleryVariantNames.length === 0) {
-    return `export default function Gallery(props) {
+    return `${GALLERY_PROPS}
+export default function Gallery(_props: GalleryProps) {
   return null
 }
 `
@@ -691,7 +711,8 @@ function generateGallery(galleryVariantNames) {
     const name = galleryVariantNames[0]
     return `import ${name} from './variants/${name}'
 
-export default function Gallery(props) {
+${GALLERY_PROPS}
+export default function Gallery({ variant: _variant, ...props }: GalleryProps) {
   return <${name} {...props} />
 }
 `
@@ -712,10 +733,9 @@ export default function Gallery(props) {
 
   return `${imports}
 
-export default function Gallery(props) {
-  const variant = props.variant || '${defaultName.toLowerCase()}'
-
-  switch (variant) {
+${GALLERY_PROPS}
+export default function Gallery({ variant, ...props }: GalleryProps) {
+  switch (variant || '${defaultName.toLowerCase()}') {
 ${cases}
     default:
       return <${defaultName} {...props} />
@@ -724,17 +744,22 @@ ${cases}
 `
 }
 
+// Used when there is no store: the same shape, doing nothing.
+const CHECKOUT_STUB = `import type { CheckoutConfig, CheckoutItem } from '@blueprint/checkout/types'
+
+export function useCheckout() {
+  return {
+    handleCheckout(_items: CheckoutItem[], _config: CheckoutConfig) {},
+  }
+}
+`
+
 function generateCheckoutHandler(config) {
   const provider = config.store?.provider
   const storeEnabled = config.store?.enabled === true
 
   if (!storeEnabled || !provider || provider === 'none') {
-    return `export function useCheckout() {
-  return {
-    handleCheckout(_items, _config) {},
-  }
-}
-`
+    return `${CHECKOUT_STUB}`
   }
 
   if (provider === 'stripe') {
@@ -747,12 +772,7 @@ function generateCheckoutHandler(config) {
 `
   }
 
-  return `export function useCheckout() {
-  return {
-    handleCheckout(_items, _config) {},
-  }
-}
-`
+  return `${CHECKOUT_STUB}`
 }
 
 // ---------------------------------------------------------------------------

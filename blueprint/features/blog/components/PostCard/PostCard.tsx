@@ -1,8 +1,9 @@
-import { Link } from 'react-router'
-import styles from './PostCard.module.css'
+import { Link } from 'react-router';
+import type { Post } from '@/config/posts';
+import styles from './PostCard.module.css';
 
-export default function PostCard({ post }) {
-  const coverUrl = post.cover ? `/blog/${post.slug}/${post.cover}` : null
+export default function PostCard({ post }: { post: Post }) {
+  const coverUrl = post.cover ? `/blog/${post.slug}/${post.cover}` : null;
 
   return (
     <Link to={`/blog/${post.slug}`} className={styles.postCard}>
@@ -34,5 +35,5 @@ export default function PostCard({ post }) {
         )}
       </div>
     </Link>
-  )
+  );
 }

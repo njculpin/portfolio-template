@@ -110,7 +110,11 @@ export function addProject(sandbox, slug, project = {}) {
   fs.mkdirSync(path.join(dir, 'assets'), { recursive: true })
   fs.writeFileSync(
     path.join(dir, 'project.json'),
-    JSON.stringify({ title: slug, description: '', tags: [], date: '2026-01-01', ...project }, null, 2),
+    JSON.stringify(
+      { title: slug, description: '', tags: [], date: '2026-01-01', ...project },
+      null,
+      2,
+    ),
   )
   return dir
 }

@@ -52,7 +52,9 @@ describe('stage 1: fresh install scaffolds the wizard', () => {
   it('installs the default config and the wizard steps', () => {
     assert.equal(readConfig(sandbox).site.name, 'Artist Name')
     assert.ok(exists(webPath(sandbox, 'src', 'components', 'SetupWizard', 'SetupWizard.tsx')))
-    assert.ok(exists(webPath(sandbox, 'src', 'components', 'SetupWizard', 'steps', 'CreativeDomain.tsx')))
+    assert.ok(
+      exists(webPath(sandbox, 'src', 'components', 'SetupWizard', 'steps', 'CreativeDomain.tsx')),
+    )
   })
 
   it('ships token sources for the style build', () => {
@@ -168,13 +170,58 @@ describe('layout choices pull in the matching variants', () => {
   })
 
   it('copies the chosen project variant', () => {
-    assert.ok(exists(webPath(sandbox, 'src', 'components', 'ProjectDetail', 'variants', 'SplitView.tsx')))
+    assert.ok(
+      exists(webPath(sandbox, 'src', 'components', 'ProjectDetail', 'variants', 'SplitView.tsx')),
+    )
   })
 
   it('pulls in navigation dependencies', () => {
     const navDir = webPath(sandbox, 'src', 'components', 'Navigation')
     assert.ok(exists(navDir, 'variants', 'Sidebar.tsx'))
     assert.ok(exists(navDir, 'variants', 'Overlay.tsx'), 'sidebar depends on the overlay menu')
+  })
+})
+
+describe('the generated site is wired up to actually render', () => {
+  let sandbox
+  let scaffold
+
+  before(async () => {
+    sandbox = createSandbox('wiring')
+    ;({ scaffold } = await loadScaffold(sandbox))
+    // A second project layout turns ProjectDetail into a switch.
+    const override = contentPath(sandbox, 'portfolio', 'override')
+    fs.mkdirSync(override, { recursive: true })
+    fs.writeFileSync(
+      path.join(override, 'project.json'),
+      JSON.stringify({ title: 'Override', layout: 'slideshow' }),
+    )
+    writeConfig(sandbox)
+    scaffold()
+  })
+  after(() => destroySandbox(sandbox))
+
+  it('renders child routes through the layout outlet', () => {
+    // PageLayout is a layout route, so page content arrives via Outlet, not
+    // children — taking children leaves every page blank.
+    const layout = read(webPath(sandbox, 'src', 'layouts', 'PageLayout.tsx'))
+    assert.match(layout, /<Outlet \/>/)
+    assert.ok(!layout.includes('{children}'), 'children never arrive on a layout route')
+  })
+
+  it('reads the config the way useConfig returns it', () => {
+    // useConfig() returns the config itself; destructuring { config } yields
+    // undefined and the nav throws on first render.
+    const nav = read(webPath(sandbox, 'src', 'components', 'Navigation', 'Navigation.tsx'))
+    assert.match(nav, /const config = useConfig\(\)/)
+    assert.ok(!nav.includes('const { config }'), 'useConfig does not return a wrapper')
+  })
+
+  it('honours a per-project layout override', () => {
+    // The override lives on the project, not on a prop nobody passes.
+    const detail = read(webPath(sandbox, 'src', 'components', 'ProjectDetail', 'ProjectDetail.tsx'))
+    assert.match(detail, /props\.project\.layout/)
+    assert.match(detail, /case 'slideshow':/)
   })
 })
 
@@ -233,7 +280,9 @@ describe('content lives in content/, outside the web package', () => {
   it('leaves the artist projects alone on a re-scaffold', () => {
     addProject(sandbox, 'my-project', { title: 'My Project' })
     scaffold()
-    const project = JSON.parse(read(contentPath(sandbox, 'portfolio', 'my-project', 'project.json')))
+    const project = JSON.parse(
+      read(contentPath(sandbox, 'portfolio', 'my-project', 'project.json')),
+    )
     assert.equal(project.title, 'My Project')
   })
 
@@ -265,6 +314,86 @@ describe('content lives in content/, outside the web package', () => {
       read(contentPath(sandbox, 'portfolio', 'root-project', 'project.json')),
     )
     assert.equal(migrated.title, 'Root')
+  })
+})
+
+describe('a new site starts with placeholder content', () => {
+  let sandbox
+  let scaffold
+
+  before(async () => {
+    sandbox = createSandbox('placeholders')
+    ;({ scaffold } = await loadScaffold(sandbox))
+  })
+  after(() => destroySandbox(sandbox))
+
+  it('seeds example projects before setup is even finished', () => {
+    scaffold() // wizard mode
+
+    const projects = fs
+      .readdirSync(contentPath(sandbox, 'portfolio'), { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+    assert.ok(projects.length >= 2, 'a couple of projects to look at, not an empty folder')
+
+    for (const project of projects) {
+      const dir = contentPath(sandbox, 'portfolio', project.name)
+      assert.ok(exists(dir, 'project.json'), `${project.name} has metadata`)
+      assert.ok(exists(dir, 'cover.jpg'), `${project.name} has a cover`)
+      assert.ok(
+        fs.readdirSync(path.join(dir, 'assets')).length > 0,
+        `${project.name} has images in assets/`,
+      )
+    }
+  })
+
+  it('ships placeholder images the artist can actually see', () => {
+    // They were 1x1 pixels once, which reads as a broken site rather than a
+    // prompt to replace them.
+    const cover = contentPath(sandbox, 'portfolio', 'example-project', 'cover.jpg')
+    assert.ok(fs.statSync(cover).size > 5_000, 'a real, visible placeholder image')
+  })
+
+  it('explains the folder in a README', () => {
+    const readme = read(contentPath(sandbox, 'README.md'))
+    assert.match(readme, /content\/portfolio/)
+  })
+
+  it('demonstrates both an explicit media list and auto-discovery', () => {
+    const explicit = JSON.parse(
+      read(contentPath(sandbox, 'portfolio', 'example-project', 'project.json')),
+    )
+    assert.ok(Array.isArray(explicit.media) && explicit.media.length > 0)
+    assert.ok(
+      explicit.media.every((m) => m.alt),
+      'placeholders model alt text',
+    )
+
+    const discovered = JSON.parse(
+      read(contentPath(sandbox, 'portfolio', 'example-series', 'project.json')),
+    )
+    assert.equal(discovered.media, undefined, 'this one relies on auto-discovery')
+  })
+
+  it('adds a placeholder product only once the store is switched on', () => {
+    writeConfig(sandbox)
+    scaffold()
+    assert.ok(!exists(contentPath(sandbox, 'store')), 'no store, no products')
+
+    writeConfig(sandbox, {
+      store: { enabled: true, provider: 'stripe', currency: 'usd', layout: 'grid', shipFrom: '' },
+    })
+    scaffold()
+    assert.ok(exists(contentPath(sandbox, 'store', 'example-print', 'product.json')))
+    assert.ok(exists(contentPath(sandbox, 'store', 'example-print', 'cover.jpg')))
+  })
+
+  it('never overwrites work that is already there', () => {
+    addProject(sandbox, 'example-project', { title: 'Mine now' })
+    scaffold()
+    const project = JSON.parse(
+      read(contentPath(sandbox, 'portfolio', 'example-project', 'project.json')),
+    )
+    assert.equal(project.title, 'Mine now')
   })
 })
 

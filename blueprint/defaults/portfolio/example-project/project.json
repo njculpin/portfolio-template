@@ -1,0 +1,19 @@
+{
+  "title": "Example Project",
+  "description": "A short paragraph about the work — what it is, who it was for, and what you were exploring. Replace this project with your own, or ask Claude to run /add-project.",
+  "tags": ["illustration", "editorial"],
+  "date": "2026-01-15",
+  "cover": "cover.jpg",
+  "media": [
+    {
+      "src": "assets/image-01.jpg",
+      "alt": "Describe the image for screen readers and search engines",
+      "description": "Captions are optional. Use them to talk through a detail or a decision."
+    },
+    {
+      "src": "assets/image-02.jpg",
+      "alt": "A second view of the work"
+    }
+  ],
+  "order": 1
+}

@@ -1,0 +1,7 @@
+{
+  "title": "Example Series",
+  "description": "This project lists no media, so every image in its assets/ folder is picked up automatically, in filename order. Drop files in and they appear.",
+  "tags": ["photography"],
+  "date": "2025-11-02",
+  "order": 2
+}

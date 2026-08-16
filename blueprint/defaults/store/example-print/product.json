@@ -1,0 +1,15 @@
+{
+  "title": "Example Print",
+  "description": "What the piece is, how it is made, and anything a buyer should know — paper, ink, framing, turnaround.",
+  "price": 45,
+  "category": "Prints",
+  "tags": ["print", "limited"],
+  "edition": "Edition of 50",
+  "inStock": true,
+  "providerId": "",
+  "variants": [
+    { "name": "A3 — 297 × 420 mm", "price": 45, "providerId": "" },
+    { "name": "A2 — 420 × 594 mm", "price": 75, "providerId": "" }
+  ],
+  "order": 1
+}

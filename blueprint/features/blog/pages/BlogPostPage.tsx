@@ -1,14 +1,14 @@
-import { useParams, Link } from 'react-router'
-import { usePost } from '@/hooks/usePosts'
-import { useDocumentTitle } from '@/hooks/useDocumentTitle'
-import { useMetaTags } from '@/hooks/useMetaTags'
-import MarkdownRenderer from '@/components/MarkdownRenderer/MarkdownRenderer'
-import styles from './BlogPostPage.module.css'
+import { useParams, Link } from 'react-router';
+import { usePost } from '@/hooks/usePosts';
+import { useDocumentTitle } from '@/hooks/useDocumentTitle';
+import { useMetaTags } from '@/hooks/useMetaTags';
+import MarkdownRenderer from '@/components/MarkdownRenderer/MarkdownRenderer';
+import styles from './BlogPostPage.module.css';
 
 export default function BlogPostPage() {
-  const { slug } = useParams()
-  const { post } = usePost(slug)
-  useDocumentTitle(post?.title)
+  const { slug } = useParams();
+  const { post } = usePost(slug || '');
+  useDocumentTitle(post?.title);
   useMetaTags(
     post
       ? {
@@ -17,7 +17,7 @@ export default function BlogPostPage() {
           image: post.cover ? `/blog/${post.slug}/${post.cover}` : undefined,
         }
       : undefined,
-  )
+  );
 
   if (!post) {
     return (
@@ -27,7 +27,7 @@ export default function BlogPostPage() {
           Back to blog
         </Link>
       </div>
-    )
+    );
   }
 
   return (
@@ -67,5 +67,5 @@ export default function BlogPostPage() {
       )}
       <MarkdownRenderer contentLoader={post.contentLoader} slug={post.slug} />
     </article>
-  )
+  );
 }
