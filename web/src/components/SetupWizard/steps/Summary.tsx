@@ -1,11 +1,20 @@
 import { useState } from 'react'
 import styles from '../SetupWizard.module.css'
+import { DOMAIN_LABELS } from './CreativeDomain'
+import type { WizardFormData } from '../types'
 
-export default function Summary({ formData, goToStep, onSave }: any) {
+type SummaryProps = {
+  formData: WizardFormData
+  goToStep: (step: number) => void
+}
+
+export default function Summary({ formData, goToStep }: SummaryProps) {
   const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
 
   const handleSave = async () => {
     setSaving(true)
+    setError('')
 
     const config = {
       site: {
@@ -19,7 +28,7 @@ export default function Summary({ formData, goToStep, onSave }: any) {
         },
         social: formData.social,
       },
-      domain: formData.domain,
+      domains: formData.domains,
       layout: {
         homepage: formData.homepage,
         project: formData.project,
@@ -29,7 +38,7 @@ export default function Summary({ formData, goToStep, onSave }: any) {
         enabled: formData.blogEnabled,
       },
       store: {
-        enabled: false,
+        enabled: formData.storeEnabled,
         provider: 'stripe',
         currency: 'usd',
         layout: 'grid',
@@ -39,35 +48,39 @@ export default function Summary({ formData, goToStep, onSave }: any) {
     }
 
     try {
-      await fetch('/__api/save-config', {
+      // One request: saves the config, applies the theme preset, and scaffolds the
+      // real site. When it returns, the wizard no longer exists on disk.
+      const response = await fetch('/__api/complete-setup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(config),
+        body: JSON.stringify({ config, preset: formData.themePreset }),
       })
 
-      if (formData.themePreset) {
-        await fetch('/__api/apply-preset', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ preset: formData.themePreset }),
-        })
+      if (!response.ok) {
+        throw new Error(await response.text())
       }
 
-      await fetch('/__api/scaffold', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(config),
-      })
-
-      onSave()
-    } catch (err: any) {
+      // Replace rather than push, so Back can't land on the wizard again.
+      window.location.replace(import.meta.env.BASE_URL || '/')
+    } catch (err) {
       console.error('Failed to save:', err)
+      setError('Something went wrong while building your site — check the dev server output.')
       setSaving(false)
     }
   }
 
   const socialDisplay =
-    formData.social.length > 0 ? formData.social.map((s: any) => s.platform).join(', ') : 'None'
+    formData.social.length > 0 ? formData.social.map((s) => s.platform).join(', ') : 'None'
+
+  const domainDisplay =
+    formData.domains.length > 0
+      ? formData.domains.map((id) => DOMAIN_LABELS[id] || id).join(', ')
+      : 'None'
+
+  const enabledFeatures = [
+    formData.blogEnabled ? 'Blog' : '',
+    formData.storeEnabled ? 'Store' : '',
+  ].filter(Boolean)
 
   return (
     <div>
@@ -117,8 +130,8 @@ export default function Summary({ formData, goToStep, onSave }: any) {
       </div>
 
       <div className={styles.summarySection}>
-        <span className={styles.summaryLabel}>Domain</span>
-        <span className={styles.summaryValue}>{formData.domain}</span>
+        <span className={styles.summaryLabel}>Domains</span>
+        <span className={styles.summaryValue}>{domainDisplay}</span>
         <button className={styles.summaryEdit} onClick={() => goToStep(3)}>
           Edit
         </button>
@@ -144,7 +157,9 @@ export default function Summary({ formData, goToStep, onSave }: any) {
 
       <div className={styles.summarySection}>
         <span className={styles.summaryLabel}>Features</span>
-        <span className={styles.summaryValue}>{formData.blogEnabled ? 'Blog' : 'None'}</span>
+        <span className={styles.summaryValue}>
+          {enabledFeatures.length > 0 ? enabledFeatures.join(', ') : 'None'}
+        </span>
         <button className={styles.summaryEdit} onClick={() => goToStep(6)}>
           Edit
         </button>
@@ -163,8 +178,10 @@ export default function Summary({ formData, goToStep, onSave }: any) {
         onClick={handleSave}
         disabled={saving}
       >
-        {saving ? 'Saving...' : 'Save & Build My Portfolio'}
+        {saving ? 'Building your site…' : 'Save & Build My Portfolio'}
       </button>
+
+      {error && <p className={styles.saveError}>{error}</p>}
     </div>
   )
 }

@@ -45,7 +45,7 @@ Based on the category, collect the right information:
 3. Check React state management — stale closures, missing dependencies, conditional hooks
 
 ### Content issues
-1. Check `portfolio/*/project.json` for valid JSON and correct field types
+1. Check `content/portfolio/*/project.json` for valid JSON and correct field types
 2. Check that media files exist in `assets/` with supported extensions
 3. Check `src/config/projects.ts` discovery logic
 4. For store products, check `store/*/product.json` and `src/config/products.ts`

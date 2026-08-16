@@ -24,14 +24,18 @@ Ask which platforms they'd like to link. Supported platforms:
 
 For each platform they want, ask for their profile URL. Collect as an array of `{ "platform": "...", "url": "..." }` objects.
 
-## Step 3: Creative Domain
+## Step 3: Creative Domains
 
-Ask what best describes their work:
+Ask what describes their work. **They can pick more than one** — plenty of people illustrate and
+design. Collect the answers as an array of ids:
 
-- **illustration** - Illustration & visual art
-- **photography** - Photography
-- **motion** - Motion design & animation
-- **mixed** - Multi-disciplinary / mixed media
+- **illustration** - Illustration, concept art, visual storytelling
+- **photography** - Fine art, editorial, commercial, or documentary photography
+- **brand** - Identity systems, logos, typography, packaging, campaigns
+- **ux** - Research, flows, wireframes, interface systems
+- **product** - End-to-end product design
+- **3d** - Modeling, texturing, lighting, rendered environments
+- **other** - A blend of disciplines, or a practice all their own
 
 ## Step 4: Layout Preferences
 
@@ -79,11 +83,21 @@ Using their answers, update the file `portfolio.config.json` at the project root
     },
     "social": [{ "platform": "instagram", "url": "https://instagram.com/..." }]
   },
-  "domain": "mixed",
+  "domains": ["illustration", "brand"],
   "layout": {
     "homepage": "grid",
     "project": "scroll",
     "navigation": "topbar"
+  },
+  "blog": {
+    "enabled": false
+  },
+  "store": {
+    "enabled": false,
+    "provider": "stripe",
+    "currency": "usd",
+    "layout": "grid",
+    "shipFrom": ""
   },
   "deployment": "vercel"
 }
@@ -112,4 +126,4 @@ Tell the artist what was configured and remind them to:
 1. Add their portfolio projects using the `/add-project` skill
 2. Customize their visual theme using the `/theme` skill
 3. Run `npm run dev` to preview their site locally
-4. Add their own media files to the `portfolio/` directory
+4. Add their own media files to the `content/portfolio/` directory

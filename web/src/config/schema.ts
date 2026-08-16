@@ -12,7 +12,7 @@ const defaultConfig = {
     },
     social: [] as { platform: string; url: string }[],
   },
-  domain: 'mixed',
+  domains: [] as string[],
   layout: {
     homepage: 'grid',
     project: 'scroll',
@@ -31,8 +31,8 @@ const defaultConfig = {
   deployment: 'vercel',
 }
 
-export function isDefaultConfig(config: any) {
-  return config.site.name === 'Artist Name'
+export function isDefaultConfig(config: { site?: { name?: string } }) {
+  return config.site?.name === 'Artist Name'
 }
 
 export function loadConfig() {

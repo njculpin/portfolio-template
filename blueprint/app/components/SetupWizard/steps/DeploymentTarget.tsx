@@ -25,9 +25,7 @@ export default function DeploymentTarget({ formData, updateFormData }: any) {
   return (
     <div>
       <h2 className={styles.stepTitle}>Deployment</h2>
-      <p className={styles.stepDescription}>
-        Where would you like to host your portfolio?
-      </p>
+      <p className={styles.stepDescription}>Where would you like to host your portfolio?</p>
 
       <div className={styles.cardGrid3}>
         {TARGETS.map((target: any) => (

@@ -1,24 +1,24 @@
-const postConfigs = import.meta.glob('../../blog/*/post.json', {
+const postConfigs = import.meta.glob('../../../content/blog/*/post.json', {
   eager: true,
 })
 
-const postContent = import.meta.glob('../../blog/*/content.md', {
+const postContent = import.meta.glob('../../../content/blog/*/content.md', {
   eager: false,
   query: '?raw',
   import: 'default',
 })
 
-const postCovers = import.meta.glob('../../blog/*/cover.{jpg,jpeg,png,gif,webp,avif}', {
+const postCovers = import.meta.glob('../../../content/blog/*/cover.{jpg,jpeg,png,gif,webp,avif}', {
   eager: false,
   query: '?url',
   import: 'default',
 })
 
 function discoverCover(slug) {
-  const prefix = `../../blog/${slug}/cover.`
+  const prefix = `../../../content/blog/${slug}/cover.`
   const match = Object.keys(postCovers).find((p) => p.startsWith(prefix))
   if (match) {
-    return match.slice(`../../blog/${slug}/`.length)
+    return match.slice(`../../../content/blog/${slug}/`.length)
   }
   return null
 }
@@ -38,11 +38,11 @@ export function loadPosts() {
   }
 
   const posts = Array.from(slugs).map((slug) => {
-    const configPath = `../../blog/${slug}/post.json`
+    const configPath = `../../../content/blog/${slug}/post.json`
     const configMod = postConfigs[configPath]
     const config = configMod?.default || {}
 
-    const contentPath = `../../blog/${slug}/content.md`
+    const contentPath = `../../../content/blog/${slug}/content.md`
     const contentLoader = postContent[contentPath] || null
 
     const discoveredCover = discoverCover(slug)
@@ -86,11 +86,11 @@ export function loadPost(slug) {
 
   if (!allSlugs.has(slug)) return null
 
-  const configPath = `../../blog/${slug}/post.json`
+  const configPath = `../../../content/blog/${slug}/post.json`
   const configMod = postConfigs[configPath]
   const config = configMod?.default || {}
 
-  const contentPath = `../../blog/${slug}/content.md`
+  const contentPath = `../../../content/blog/${slug}/content.md`
   const contentLoader = postContent[contentPath] || null
 
   const discoveredCover = discoverCover(slug)

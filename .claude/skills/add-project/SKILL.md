@@ -9,12 +9,12 @@ You are helping an artist add a new project to their portfolio.
 
 ## How projects work
 
-Projects are folders inside `portfolio/`. The template auto-discovers media files — artists just drop images and videos into the folder. A `project.json` file is optional metadata.
+Projects are folders inside `content/portfolio/`. The template auto-discovers media files — artists just drop images and videos into the folder. A `project.json` file is optional metadata.
 
 **Folder structure:**
 
 ```
-portfolio/
+content/portfolio/
   my-project/
     cover.jpg          ← thumbnail (optional, falls back to first image)
     assets/
@@ -67,14 +67,14 @@ Ask the artist for:
 ## Step 2: Create the project
 
 1. Generate a slug from the title (lowercase, hyphens for spaces, remove special characters)
-2. Create `portfolio/<slug>/`
-3. Create `portfolio/<slug>/assets/`
-4. Create `portfolio/<slug>/project.json` with provided metadata (omit empty fields)
+2. Create `content/portfolio/<slug>/`
+3. Create `content/portfolio/<slug>/assets/`
+4. Create `content/portfolio/<slug>/project.json` with provided metadata (omit empty fields)
 
 ## Step 3: Tell the artist what to do next
 
-1. Drop a `cover.jpg` into `portfolio/<slug>/` for the homepage thumbnail
-2. Drop their media files into `portfolio/<slug>/assets/`
+1. Drop a `cover.jpg` into `content/portfolio/<slug>/` for the homepage thumbnail
+2. Drop their media files into `content/portfolio/<slug>/assets/`
 3. Files are displayed in filename order — name them `01-detail.jpg`, `02-closeup.jpg`, etc. for control
 4. Run `npm run dev` to see the project appear on the site
 5. To add captions or custom alt text, add a `media` array to `project.json`

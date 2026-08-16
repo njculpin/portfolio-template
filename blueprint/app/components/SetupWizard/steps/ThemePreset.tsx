@@ -61,22 +61,13 @@ export default function ThemePreset({ formData, updateFormData }: any) {
                 color: preset.preview.text,
               }}
             >
-              <div
-                className={styles.presetHeading}
-                style={{ fontFamily: preset.preview.heading }}
-              >
+              <div className={styles.presetHeading} style={{ fontFamily: preset.preview.heading }}>
                 Aa
               </div>
-              <div
-                className={styles.presetBody}
-                style={{ fontFamily: preset.preview.body }}
-              >
+              <div className={styles.presetBody} style={{ fontFamily: preset.preview.body }}>
                 Portfolio
               </div>
-              <div
-                className={styles.presetAccent}
-                style={{ background: preset.preview.accent }}
-              />
+              <div className={styles.presetAccent} style={{ background: preset.preview.accent }} />
             </div>
             <div className={styles.presetInfo}>
               <div className={styles.presetName}>{preset.name}</div>
@@ -87,10 +78,7 @@ export default function ThemePreset({ formData, updateFormData }: any) {
       </div>
 
       <div className={styles.skipOption}>
-        <button
-          className={styles.skipButton}
-          onClick={() => updateFormData({ themePreset: '' })}
-        >
+        <button className={styles.skipButton} onClick={() => updateFormData({ themePreset: '' })}>
           Skip — I'll customize later
         </button>
       </div>

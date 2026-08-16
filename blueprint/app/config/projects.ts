@@ -1,13 +1,13 @@
-const projectConfigs = import.meta.glob('../../portfolio/*/project.json', {
+const projectConfigs = import.meta.glob('../../../content/portfolio/*/project.json', {
   eager: true,
 })
 
 const mediaFiles = import.meta.glob(
-  '../../portfolio/*/assets/*.{jpg,jpeg,png,gif,webp,avif,mp4,webm,mov}',
+  '../../../content/portfolio/*/assets/*.{jpg,jpeg,png,gif,webp,avif,mp4,webm,mov}',
   { eager: false, query: '?url', import: 'default' },
 )
 
-const coverFiles = import.meta.glob('../../portfolio/*/cover.{jpg,jpeg,png,gif,webp,avif}', {
+const coverFiles = import.meta.glob('../../../content/portfolio/*/cover.{jpg,jpeg,png,gif,webp,avif}', {
   eager: false,
   query: '?url',
   import: 'default',
@@ -18,7 +18,7 @@ function naturalSort(a: string, b: string) {
 }
 
 function discoverMedia(slug: string) {
-  const prefix = `../../portfolio/${slug}/assets/`
+  const prefix = `../../../content/portfolio/${slug}/assets/`
   const discovered = Object.keys(mediaFiles)
     .filter((p) => p.startsWith(prefix))
     .sort((a, b) => naturalSort(a, b))
@@ -33,10 +33,10 @@ function discoverMedia(slug: string) {
 }
 
 function discoverCover(slug: string) {
-  const prefix = `../../portfolio/${slug}/cover.`
+  const prefix = `../../../content/portfolio/${slug}/cover.`
   const match = Object.keys(coverFiles).find((p) => p.startsWith(prefix))
   if (match) {
-    return match.slice(`../../portfolio/${slug}/`.length)
+    return match.slice(`../../../content/portfolio/${slug}/`.length)
   }
   return null
 }
@@ -64,7 +64,7 @@ export function loadProjects() {
   }
 
   const projects = Array.from(slugs).map((slug) => {
-    const configPath = `../../portfolio/${slug}/project.json`
+    const configPath = `../../../content/portfolio/${slug}/project.json`
     const configMod = projectConfigs[configPath] as { default: Partial<ProjectData> } | undefined
     const config = configMod?.default || {}
 
@@ -118,7 +118,7 @@ export function loadProject(slug: string) {
 
   if (!allSlugs.has(slug)) return null
 
-  const configPath = `../../portfolio/${slug}/project.json`
+  const configPath = `../../../content/portfolio/${slug}/project.json`
   const configMod = projectConfigs[configPath] as { default: Partial<ProjectData> } | undefined
   const config = configMod?.default || {}
 

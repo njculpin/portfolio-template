@@ -14,7 +14,7 @@
       { "platform": "LinkedIn", "url": "https://linkedin.com" }
     ]
   },
-  "domain": "mixed",
+  "domains": ["illustration", "photography"],
   "layout": {
     "homepage": "grid",
     "project": "scroll",

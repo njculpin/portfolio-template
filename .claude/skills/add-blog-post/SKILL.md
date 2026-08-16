@@ -9,12 +9,12 @@ You are helping an artist add a new blog post to their portfolio.
 
 ## How blog posts work
 
-Blog posts are folders inside `blog/`. Each post has a `post.json` for metadata and a `content.md` for the body text written in markdown.
+Blog posts are folders inside `content/blog/`. Each post has a `post.json` for metadata and a `content.md` for the body text written in markdown.
 
 **Folder structure:**
 
 ```
-blog/
+content/blog/
   my-post/
     cover.jpg          ← hero image (optional)
     post.json          ← metadata (required)
@@ -67,17 +67,17 @@ Ask the artist for:
 ## Step 3: Create the post
 
 1. Generate a slug from the title (lowercase, hyphens for spaces, remove special characters)
-2. Create `blog/<slug>/`
-3. Create `blog/<slug>/post.json` with:
+2. Create `content/blog/<slug>/`
+3. Create `content/blog/<slug>/post.json` with:
    - `title`, `excerpt` (generate a 1-2 sentence summary from the content), `tags`, `date`
-4. Create `blog/<slug>/content.md` with the post body in markdown
+4. Create `content/blog/<slug>/content.md` with the post body in markdown
    - If the artist gave a topic or outline, write the full post for them in their voice
    - Keep it authentic — avoid corporate tone, generic filler, or clickbait
    - Use the artist's existing blog posts (if any) as a style reference
 
 ## Step 4: Tell the artist what to do next
 
-1. Drop a `cover.jpg` into `blog/<slug>/` for an optional hero image
+1. Drop a `cover.jpg` into `content/blog/<slug>/` for an optional hero image
 2. Run `npm run dev` to see the post appear on the blog
 3. To hide a post while drafting, add `"draft": true` to `post.json`
 4. To control blog order, add `"order": 1` (lower numbers appear first)

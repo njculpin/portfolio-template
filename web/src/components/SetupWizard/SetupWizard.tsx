@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import styles from './SetupWizard.module.css'
+import type { WizardFormData } from './types'
 import Welcome from './steps/Welcome'
 import PersonalInfo from './steps/PersonalInfo'
 import SocialLinks from './steps/SocialLinks'
@@ -10,44 +11,44 @@ import ThemePreset from './steps/ThemePreset'
 import Features from './steps/Features'
 import DeploymentTarget from './steps/DeploymentTarget'
 import Summary from './steps/Summary'
-import NextSteps from './steps/NextSteps'
 
-const TOTAL_STEPS = 10
+const TOTAL_STEPS = 9
 
 export default function SetupWizard() {
   const [step, setStep] = useState(0)
   const [direction, setDirection] = useState(1)
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<WizardFormData>({
     name: '',
     tagline: '',
     bio: '',
     email: '',
     location: '',
-    social: [] as any[],
-    domain: 'illustration',
+    social: [],
+    domains: ['illustration'],
     homepage: 'grid',
     project: 'scroll',
     navigation: 'topbar',
     themePreset: '',
     blogEnabled: false,
+    storeEnabled: false,
     deployment: 'vercel',
   })
 
-  const updateFormData = (updates: any) => {
-    setFormData((prev: any) => ({ ...prev, ...updates }))
+  const updateFormData = (updates: Partial<WizardFormData>) => {
+    setFormData((prev) => ({ ...prev, ...updates }))
   }
 
   const goNext = () => {
     setDirection(1)
-    setStep((s: any) => Math.min(s + 1, TOTAL_STEPS - 1))
+    setStep((s) => Math.min(s + 1, TOTAL_STEPS - 1))
   }
 
   const goBack = () => {
     setDirection(-1)
-    setStep((s: any) => Math.max(s - 1, 0))
+    setStep((s) => Math.max(s - 1, 0))
   }
 
-  const goToStep = (target: any) => {
+  const goToStep = (target: number) => {
     setDirection(target > step ? 1 : -1)
     setStep(target)
   }
@@ -55,6 +56,9 @@ export default function SetupWizard() {
   const canContinue = () => {
     if (step === 1) {
       return formData.name.trim() !== '' && formData.email.trim() !== ''
+    }
+    if (step === 3) {
+      return formData.domains.length > 0
     }
     return true
   }
@@ -80,9 +84,7 @@ export default function SetupWizard() {
       case 7:
         return <DeploymentTarget formData={formData} updateFormData={updateFormData} />
       case 8:
-        return <Summary formData={formData} goToStep={goToStep} onSave={goNext} />
-      case 9:
-        return <NextSteps />
+        return <Summary formData={formData} goToStep={goToStep} />
       default:
         return null
     }

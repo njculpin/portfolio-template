@@ -14,7 +14,7 @@ const PLATFORMS = [
 
 export default function SocialLinks({ formData, updateFormData }: any) {
   const [activePlatforms, setActivePlatforms] = useState(
-    () => new Set(formData.social.map((s: any) => s.platform))
+    () => new Set(formData.social.map((s: any) => s.platform)),
   );
 
   useEffect(() => {
@@ -36,9 +36,7 @@ export default function SocialLinks({ formData, updateFormData }: any) {
   };
 
   const updateUrl = (platform: any, url: any) => {
-    const updated = formData.social.map((s: any) =>
-      s.platform === platform ? { ...s, url } : s
-    );
+    const updated = formData.social.map((s: any) => (s.platform === platform ? { ...s, url } : s));
     updateFormData({ social: updated });
   };
 

@@ -8,6 +8,12 @@ const WEB = path.resolve(__dirname, '..')
 const BLUEPRINT = path.resolve(WEB, '..', 'blueprint')
 const ROOT = path.resolve(WEB, '..')
 
+// The artist's content lives in content/ at the repo root, outside the web
+// package: it is authored, not generated, and must survive every scaffold and
+// reset.
+const CONTENT = path.join(WEB, '..', 'content')
+const CONTENT_DIRS = ['portfolio', 'blog', 'store']
+
 const VARIANT_NAMES = {
   grid: 'Grid',
   masonry: 'Masonry',
@@ -62,6 +68,30 @@ function rmDir(dir) {
   }
 }
 
+function rmFile(filePath) {
+  if (fs.existsSync(filePath)) {
+    fs.rmSync(filePath, { force: true })
+  }
+}
+
+// rename is the cheap path, but Windows can refuse it (EPERM) while a watcher
+// holds the directory, and it cannot cross devices (EXDEV).
+function movePath(from, to) {
+  try {
+    fs.renameSync(from, to)
+  } catch (err) {
+    if (!['EPERM', 'EACCES', 'EXDEV', 'EBUSY'].includes(err.code)) throw err
+    fs.cpSync(from, to, { recursive: true })
+    fs.rmSync(from, { recursive: true, force: true })
+  }
+}
+
+function rmDirIfEmpty(dir) {
+  if (fs.existsSync(dir) && fs.readdirSync(dir).length === 0) {
+    fs.rmdirSync(dir)
+  }
+}
+
 function writeFile(filePath, content) {
   ensureDir(path.dirname(filePath))
   fs.writeFileSync(filePath, content, 'utf-8')
@@ -69,6 +99,29 @@ function writeFile(filePath, content) {
 
 function readJSON(filePath) {
   return JSON.parse(fs.readFileSync(filePath, 'utf-8'))
+}
+
+function contentDir(name) {
+  return path.join(CONTENT, name)
+}
+
+// Older versions kept content in web/<name>/, then in <name>/ at the root.
+// Move either layout into content/ once, so an existing site does not lose its
+// projects the next time it is scaffolded.
+function migrateLegacyContent() {
+  for (const name of CONTENT_DIRS) {
+    const current = contentDir(name)
+    for (const legacy of [path.join(WEB, name), path.join(ROOT, name)]) {
+      if (!fs.existsSync(legacy)) continue
+      if (fs.existsSync(current)) {
+        console.warn(`[scaffold] ${path.relative(ROOT, legacy)}/ ignored — content/${name}/ exists.`)
+        continue
+      }
+      ensureDir(CONTENT)
+      movePath(legacy, current)
+      console.log(`[scaffold] Moved ${path.relative(ROOT, legacy)}/ to content/${name}/.`)
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -97,7 +150,7 @@ function collectProjectVariants(config) {
   const globalProject = config.layout?.project || 'scroll'
   const variants = new Set([globalProject])
 
-  const portfolioDir = path.join(WEB, 'portfolio')
+  const portfolioDir = contentDir('portfolio')
   if (fs.existsSync(portfolioDir)) {
     for (const entry of fs.readdirSync(portfolioDir, { withFileTypes: true })) {
       if (!entry.isDirectory()) continue
@@ -136,6 +189,7 @@ function collectNavVariants(config) {
 // ---------------------------------------------------------------------------
 
 function scaffoldWizard() {
+  migrateLegacyContent()
   rmDir(path.join(WEB, 'src'))
   ensureDir(path.join(WEB, 'src'))
   ensureDir(path.join(WEB, 'public'))
@@ -232,7 +286,9 @@ export default function App() {
 // ---------------------------------------------------------------------------
 
 function scaffoldFull(config) {
-  // 1. Clean web/src/ entirely, preserve other top-level dirs
+  migrateLegacyContent()
+
+  // 1. Clean web/src/ entirely — content at the repo root is never touched
   rmDir(path.join(WEB, 'src'))
   ensureDir(path.join(WEB, 'src'))
 
@@ -248,6 +304,9 @@ function scaffoldFull(config) {
       copyFile(src, dest)
     }
   }
+
+  // 2b. The setup wizard has done its job — it is not part of the real site.
+  rmDir(path.join(WEB, 'src', 'components', 'SetupWizard'))
 
   // 3. Tokens
   copyDir(
@@ -350,7 +409,7 @@ function scaffoldFull(config) {
   }
 
   // 9. Default portfolio content
-  const portfolioDir = path.join(WEB, 'portfolio')
+  const portfolioDir = contentDir('portfolio')
   if (!fs.existsSync(portfolioDir)) {
     copyDir(
       path.join(BLUEPRINT, 'defaults', 'portfolio'),
@@ -360,7 +419,7 @@ function scaffoldFull(config) {
 
   // 9b. Default blog content
   if (blogEnabled) {
-    const blogDir = path.join(WEB, 'blog')
+    const blogDir = contentDir('blog')
     if (!fs.existsSync(blogDir)) {
       copyDir(
         path.join(BLUEPRINT, 'defaults', 'blog'),
@@ -416,7 +475,9 @@ function scaffoldFull(config) {
     generateCheckoutHandler(config),
   )
 
-  // 17. Deployment config
+  // 17. Deployment config — clear every target first, so switching hosts does
+  //     not leave the previous host's files behind
+  clearDeploymentFiles()
   copyDeploymentConfig(config)
 
   // 18. Checkout server files for Stripe
@@ -449,13 +510,12 @@ function scaffoldFull(config) {
 function generateAppTsx(config, storeEnabled, blogEnabled) {
   const imports = [
     `import { BrowserRouter, Routes, Route } from 'react-router'`,
-    `import { ConfigProvider, useConfig } from '@/hooks/useConfig'`,
+    `import { ConfigProvider } from '@/hooks/useConfig'`,
     `import PageLayout from '@/layouts/PageLayout'`,
     `import HomePage from '@/pages/HomePage'`,
     `import ProjectPage from '@/pages/ProjectPage'`,
     `import AboutPage from '@/pages/AboutPage'`,
     `import NotFoundPage from '@/pages/NotFoundPage'`,
-    `import SetupWizard from '@/components/SetupWizard/SetupWizard'`,
   ]
 
   if (storeEnabled) {
@@ -478,30 +538,18 @@ function generateAppTsx(config, storeEnabled, blogEnabled) {
 
   return `${imports.join('\n')}
 
-function AppRoutes() {
-  const { isDefaultConfig } = useConfig()
-
-  if (isDefaultConfig) {
-    return <SetupWizard />
-  }
-
-  return (
-    <Routes>
-      <Route element={<PageLayout />}>
-        <Route index element={<HomePage />} />
-        <Route path="/project/:slug" element={<ProjectPage />} />${blogRoutes}${storeRoutes}
-        <Route path="/about" element={<AboutPage />} />
-        <Route path="*" element={<NotFoundPage />} />
-      </Route>
-    </Routes>
-  )
-}
-
 export default function App() {
   return (
     <BrowserRouter>
       <ConfigProvider>
-        <AppRoutes />
+        <Routes>
+          <Route element={<PageLayout />}>
+            <Route index element={<HomePage />} />
+            <Route path="/project/:slug" element={<ProjectPage />} />${blogRoutes}${storeRoutes}
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="*" element={<NotFoundPage />} />
+          </Route>
+        </Routes>
       </ConfigProvider>
     </BrowserRouter>
   )
@@ -710,6 +758,27 @@ function generateCheckoutHandler(config) {
 // ---------------------------------------------------------------------------
 // Deployment config
 // ---------------------------------------------------------------------------
+
+// Deployment files live at the repo root (that is where Vercel and Netlify
+// expect them). They are generated output: cleared and rewritten on every
+// scaffold, and removed entirely by `npm run reset`.
+export function clearDeploymentFiles() {
+  rmFile(path.join(ROOT, 'vercel.json'))
+  rmDir(path.join(ROOT, 'api'))
+  rmFile(path.join(ROOT, 'netlify.toml'))
+  rmDir(path.join(ROOT, 'netlify'))
+
+  // Only the workflow files the scaffold copies in — the repo may have its own.
+  const workflowSrc = path.join(BLUEPRINT, 'deployment', 'github-pages', 'workflows')
+  const workflowDest = path.join(ROOT, '.github', 'workflows')
+  if (fs.existsSync(workflowSrc) && fs.existsSync(workflowDest)) {
+    for (const entry of fs.readdirSync(workflowSrc)) {
+      rmFile(path.join(workflowDest, entry))
+    }
+    rmDirIfEmpty(workflowDest)
+    rmDirIfEmpty(path.join(ROOT, '.github'))
+  }
+}
 
 function copyDeploymentConfig(config) {
   const target = config.deployment || 'vercel'

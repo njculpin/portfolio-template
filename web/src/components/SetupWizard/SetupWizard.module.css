@@ -204,6 +204,7 @@
 }
 
 .card {
+  position: relative;
   background: var(--surface-secondary);
   border: 2px solid var(--border-default);
   border-radius: var(--radius-lg);
@@ -220,6 +221,22 @@
 
 .cardSelected {
   border-color: var(--accent-primary);
+}
+
+.cardCheck {
+  position: absolute;
+  top: var(--spacing-sm);
+  right: var(--spacing-sm);
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  background: var(--accent-primary);
+  color: var(--surface-primary);
+  font-size: var(--font-size-xs);
+  line-height: 1;
 }
 
 .cardIcon {
@@ -316,6 +333,191 @@
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-medium);
   margin-bottom: var(--spacing-md);
+}
+
+/* Layout previews — miniature drawings of each layout option */
+.preview {
+  display: flex;
+  gap: 4px;
+  aspect-ratio: 16 / 10;
+  padding: 6px;
+  margin-bottom: var(--spacing-md);
+  background: var(--surface-primary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.previewCol {
+  flex-direction: column;
+}
+
+.previewFlush {
+  padding: 0;
+  gap: 2px;
+}
+
+.pvTile {
+  min-width: 0;
+  min-height: 0;
+  background: var(--text-secondary);
+  opacity: 0.3;
+  border-radius: 2px;
+}
+
+.cardSelected .pvTile {
+  background: var(--accent-primary);
+  opacity: 0.45;
+}
+
+.pvCol {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.pvRow {
+  display: flex;
+  gap: 2px;
+  min-height: 0;
+}
+
+.pvGrid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-rows: 1fr;
+  gap: 4px;
+  min-width: 0;
+}
+
+.pvGrid2 {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-auto-rows: 1fr;
+  gap: 4px;
+  min-width: 0;
+}
+
+.pvStage {
+  position: relative;
+  flex: 1;
+  display: flex;
+  min-width: 0;
+}
+
+.pvDots {
+  position: absolute;
+  bottom: 6px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+}
+
+.pvDots span {
+  width: 4px;
+  height: 4px;
+  border-radius: var(--radius-full);
+  background: var(--text-primary);
+  opacity: 0.3;
+}
+
+.pvDots span:first-child {
+  opacity: 0.75;
+}
+
+.pvLines {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  min-width: 0;
+}
+
+.pvLine {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--text-secondary);
+  opacity: 0.35;
+}
+
+.pvLine:nth-child(2) {
+  width: 78%;
+}
+
+.pvLine:nth-child(3) {
+  width: 55%;
+}
+
+.pvBar {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex: 0 0 12px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border-default);
+}
+
+.pvSide {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 0 0 24%;
+  padding-right: 6px;
+  border-right: 1px solid var(--border-default);
+}
+
+.pvMark {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--text-secondary);
+  opacity: 0.55;
+  flex: none;
+}
+
+.pvSpacer {
+  flex: 1;
+}
+
+.pvDash {
+  width: 14px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--text-secondary);
+  opacity: 0.35;
+  flex: none;
+}
+
+.pvScrim {
+  position: absolute;
+  inset: 0;
+  background: var(--surface-primary);
+  opacity: 0.85;
+}
+
+.pvMenu {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.pvMenuLine {
+  width: 42%;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--text-secondary);
+  opacity: 0.5;
 }
 
 /* Theme presets */
@@ -457,6 +659,13 @@
 
 .saveButton:hover {
   opacity: 0.85;
+}
+
+.saveError {
+  margin-top: var(--spacing-md);
+  font-size: var(--font-size-sm);
+  color: var(--accent-primary);
+  text-align: center;
 }
 
 .saving {

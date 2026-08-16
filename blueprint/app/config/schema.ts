@@ -1,4 +1,4 @@
-import siteConfig from '../../portfolio.config.json'
+import siteConfig from '../../portfolio.config.json';
 
 const defaultConfig = {
   site: {
@@ -12,7 +12,7 @@ const defaultConfig = {
     },
     social: [] as { platform: string; url: string }[],
   },
-  domain: 'mixed',
+  domains: [] as string[],
   layout: {
     homepage: 'grid',
     project: 'scroll',
@@ -29,10 +29,10 @@ const defaultConfig = {
     shipFrom: '',
   },
   deployment: 'vercel',
-}
+};
 
-export function isDefaultConfig(config: any) {
-  return config.site.name === 'Artist Name'
+export function isDefaultConfig(config: { site?: { name?: string } }) {
+  return config.site?.name === 'Artist Name';
 }
 
 export function loadConfig() {
@@ -47,8 +47,8 @@ export function loadConfig() {
         ...siteConfig.site?.contact,
       },
       social: (siteConfig.site?.social || defaultConfig.site.social) as {
-        platform: string
-        url: string
+        platform: string;
+        url: string;
       }[],
     },
     layout: {
@@ -65,5 +65,5 @@ export function loadConfig() {
       ...((siteConfig as Record<string, unknown>).store as
         Partial<typeof defaultConfig.store> | undefined),
     },
-  }
+  };
 }

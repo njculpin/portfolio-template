@@ -9,12 +9,12 @@ You are helping an artist set up an online store on their portfolio site. The st
 
 ## How the store works
 
-Products live in a `store/` directory at the project root. Each product is a folder containing a `product.json` config and images. The template auto-discovers products the same way it discovers portfolio projects.
+Products live in `content/store/`, alongside the artist's projects and posts. Each product is a folder containing a `product.json` config and images. The template auto-discovers products the same way it discovers portfolio projects.
 
 **Directory structure:**
 
 ```
-store/
+content/store/
   art-print-01/
     product.json       ← product metadata & pricing
     cover.jpg           ← thumbnail (optional, falls back to first image)
@@ -200,17 +200,17 @@ Help the artist add their first product:
    - **Edition info**: Optional — e.g., "1/50" for limited editions
 
 2. Generate a slug from the title
-3. Create `store/<slug>/`
-4. Create `store/<slug>/images/`
-5. Create `store/<slug>/product.json` with the metadata
+3. Create `content/store/<slug>/`
+4. Create `content/store/<slug>/images/`
+5. Create `content/store/<slug>/product.json` with the metadata
 
 ## Step 7: Tell the Artist What to Do Next
 
-1. Drop a `cover.jpg` into `store/<slug>/` for the shop thumbnail
-2. Drop product photos into `store/<slug>/images/` — name them `01-front.jpg`, `02-detail.jpg`, etc.
+1. Drop a `cover.jpg` into `content/store/<slug>/` for the shop thumbnail
+2. Drop product photos into `content/store/<slug>/images/` — name them `01-front.jpg`, `02-detail.jpg`, etc.
 3. Run `npm run dev` to preview the shop at `/shop`
 4. The "Shop" link appears automatically in the navigation
-5. To add more products, create new folders in `store/` or use `/setup-shop` again
+5. To add more products, create new folders in `content/store/` or use `/setup-shop` again
 6. To hide a product, add `"draft": true` to `product.json`
 7. To control order, add `"order": 1` (lower numbers first)
 8. When ready to go live:

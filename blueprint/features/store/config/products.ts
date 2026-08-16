@@ -1,14 +1,14 @@
-const productConfigs = import.meta.glob('../../store/*/product.json', {
+const productConfigs = import.meta.glob('../../../content/store/*/product.json', {
   eager: true,
 })
 
-const productImages = import.meta.glob('../../store/*/images/*.{jpg,jpeg,png,gif,webp,avif}', {
+const productImages = import.meta.glob('../../../content/store/*/images/*.{jpg,jpeg,png,gif,webp,avif}', {
   eager: false,
   query: '?url',
   import: 'default',
 })
 
-const productCovers = import.meta.glob('../../store/*/cover.{jpg,jpeg,png,gif,webp,avif}', {
+const productCovers = import.meta.glob('../../../content/store/*/cover.{jpg,jpeg,png,gif,webp,avif}', {
   eager: false,
   query: '?url',
   import: 'default',
@@ -19,7 +19,7 @@ function naturalSort(a: string, b: string) {
 }
 
 function discoverImages(slug: string) {
-  const prefix = `../../store/${slug}/images/`
+  const prefix = `../../../content/store/${slug}/images/`
   return Object.keys(productImages)
     .filter((p) => p.startsWith(prefix))
     .sort((a, b) => naturalSort(a, b))
@@ -33,10 +33,10 @@ function discoverImages(slug: string) {
 }
 
 function discoverCover(slug: string) {
-  const prefix = `../../store/${slug}/cover.`
+  const prefix = `../../../content/store/${slug}/cover.`
   const match = Object.keys(productCovers).find((p) => p.startsWith(prefix))
   if (match) {
-    return match.slice(`../../store/${slug}/`.length)
+    return match.slice(`../../../content/store/${slug}/`.length)
   }
   return null
 }
@@ -63,7 +63,7 @@ export function loadProducts() {
   }
 
   const products = Array.from(slugs).map((slug) => {
-    const configPath = `../../store/${slug}/product.json`
+    const configPath = `../../../content/store/${slug}/product.json`
     const configMod = productConfigs[configPath] as { default: Partial<ProductData> } | undefined
     const config = configMod?.default || {}
 
@@ -121,7 +121,7 @@ export function loadProduct(slug: string) {
 
   if (!allSlugs.has(slug)) return null
 
-  const configPath = `../../store/${slug}/product.json`
+  const configPath = `../../../content/store/${slug}/product.json`
   const configMod = productConfigs[configPath] as { default: Partial<ProductData> } | undefined
   const config = configMod?.default || {}
 
