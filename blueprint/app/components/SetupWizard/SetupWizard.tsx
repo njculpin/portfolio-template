@@ -7,11 +7,12 @@ import SocialLinks from './steps/SocialLinks';
 import CreativeDomain from './steps/CreativeDomain';
 import LayoutPreferences from './steps/LayoutPreferences';
 import ThemePreset from './steps/ThemePreset';
+import Features from './steps/Features';
 import DeploymentTarget from './steps/DeploymentTarget';
 import Summary from './steps/Summary';
 import NextSteps from './steps/NextSteps';
 
-const TOTAL_STEPS = 9;
+const TOTAL_STEPS = 10;
 
 export default function SetupWizard() {
   const [step, setStep] = useState(0);
@@ -28,6 +29,7 @@ export default function SetupWizard() {
     project: 'scroll',
     navigation: 'topbar',
     themePreset: '',
+    blogEnabled: false,
     deployment: 'vercel',
   });
 
@@ -74,17 +76,19 @@ export default function SetupWizard() {
       case 5:
         return <ThemePreset formData={formData} updateFormData={updateFormData} />;
       case 6:
-        return <DeploymentTarget formData={formData} updateFormData={updateFormData} />;
+        return <Features formData={formData} updateFormData={updateFormData} />;
       case 7:
-        return <Summary formData={formData} goToStep={goToStep} onSave={goNext} />;
+        return <DeploymentTarget formData={formData} updateFormData={updateFormData} />;
       case 8:
+        return <Summary formData={formData} goToStep={goToStep} onSave={goNext} />;
+      case 9:
         return <NextSteps />;
       default:
         return null;
     }
   };
 
-  const showNavigation = step > 0 && step < 7;
+  const showNavigation = step > 0 && step < 8;
 
   return (
     <div className={styles.wizard}>

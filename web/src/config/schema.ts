@@ -18,6 +18,9 @@ const defaultConfig = {
     project: 'scroll',
     navigation: 'topbar',
   },
+  blog: {
+    enabled: false,
+  },
   store: {
     enabled: false,
     provider: 'stripe' as 'stripe' | 'shopify',
@@ -51,6 +54,11 @@ export function loadConfig() {
     layout: {
       ...defaultConfig.layout,
       ...siteConfig.layout,
+    },
+    blog: {
+      ...defaultConfig.blog,
+      ...((siteConfig as Record<string, unknown>).blog as
+        Partial<typeof defaultConfig.blog> | undefined),
     },
     store: {
       ...defaultConfig.store,

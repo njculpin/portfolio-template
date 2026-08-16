@@ -136,6 +136,7 @@ function collectNavVariants(config) {
 // ---------------------------------------------------------------------------
 
 function scaffoldWizard() {
+  rmDir(path.join(WEB, 'src'))
   ensureDir(path.join(WEB, 'src'))
   ensureDir(path.join(WEB, 'public'))
 
@@ -421,6 +422,21 @@ function scaffoldFull(config) {
   // 18. Checkout server files for Stripe
   if (storeEnabled && config.store?.provider === 'stripe') {
     copyCheckoutServerFiles(config)
+  }
+
+  // 19. RSS feed link in index.html
+  if (blogEnabled) {
+    const indexPath = path.join(WEB, 'index.html')
+    if (fs.existsSync(indexPath)) {
+      let html = fs.readFileSync(indexPath, 'utf-8')
+      if (!html.includes('feed.xml')) {
+        html = html.replace(
+          '</head>',
+          '    <link rel="alternate" type="application/rss+xml" title="Blog Feed" href="/feed.xml" />\n  </head>',
+        )
+        fs.writeFileSync(indexPath, html, 'utf-8')
+      }
+    }
   }
 
   return 'full'

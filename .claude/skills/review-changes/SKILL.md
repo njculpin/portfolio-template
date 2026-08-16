@@ -21,7 +21,7 @@ Sort the changed files into these buckets:
 - **Styles** — `*.module.css`, `src/styles/**`
 - **Tokens** — `src/tokens/**`
 - **Config** — `portfolio.config.json`, `vite.config.ts`, `tsconfig.json`, `vercel.json`, `netlify.toml`
-- **Content** — `portfolio/**`
+- **Content** — `portfolio/**`, `blog/**`
 - **Other** — everything else
 
 ## Step 3: Review each bucket
@@ -59,7 +59,7 @@ For any changed token JSON files in `src/tokens/`, check:
 For any changed config files, check:
 
 - **Valid JSON/TOML** — syntax errors
-- **Schema compliance** — `portfolio.config.json` fields match expected structure (site, domain, layout, deployment)
+- **Schema compliance** — `portfolio.config.json` fields match expected structure (site, domain, layout, blog, store, deployment)
 - **Layout values** — homepage layout must be one of: grid, masonry, columnized, justify. Project layout must be one of: scroll, slideshow, splitview. Navigation must be one of: topbar, sidebar, overlay
 
 ### Content
@@ -69,6 +69,17 @@ For any changed `portfolio/**/project.json` files, check:
 - **Valid JSON** — syntax errors
 - **Field types** — tags should be an array, date should be YYYY-MM-DD format, draft should be boolean
 - **Media references** — if `media` array references files, note they should exist in the project's assets folder
+
+For any changed `blog/**/post.json` files, check:
+
+- **Valid JSON** — syntax errors
+- **Field types** — tags should be an array, date should be YYYY-MM-DD format, draft should be boolean
+- **Required fields** — title and excerpt should be non-empty strings
+
+For any changed `blog/**/content.md` files, check:
+
+- **Broken links** — markdown links with empty URLs `[text]()`
+- **Broken images** — image references to files that likely don't exist (relative paths should reference files in the same blog post folder)
 
 ## Step 4: Report findings
 

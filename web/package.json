@@ -5,6 +5,7 @@
   "version": "1.0.0",
   "scripts": {
     "scaffold": "node scripts/scaffold.js",
+    "reset": "node scripts/reset.js",
     "dev": "node scripts/scaffold.js --if-needed && node style-dictionary.config.js && vite",
     "build": "node style-dictionary.config.js && tsc -b && vite build",
     "preview": "vite preview",

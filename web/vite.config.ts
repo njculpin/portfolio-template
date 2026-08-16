@@ -207,6 +207,20 @@ export default defineConfig({
       },
     },
     {
+      name: 'serve-blog',
+      configureServer(server) {
+        server.middlewares.use('/blog', (req, res, next) => {
+          const filePath = path.resolve(__dirname, 'blog', req.url!.slice(1))
+          if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+            res.setHeader('Access-Control-Allow-Origin', '*')
+            fs.createReadStream(filePath).pipe(res)
+          } else {
+            next()
+          }
+        })
+      },
+    },
+    {
       name: 'optimize-portfolio-assets',
       async closeBundle() {
         const src = path.resolve(__dirname, 'portfolio')
@@ -216,6 +230,12 @@ export default defineConfig({
         const storeSrc = path.resolve(__dirname, 'store')
         const storeDest = path.resolve(__dirname, 'dist/store')
         await optimizeAndCopy(storeSrc, storeDest)
+
+        const blogSrc = path.resolve(__dirname, 'blog')
+        const blogDest = path.resolve(__dirname, 'dist/blog')
+        await optimizeAndCopy(blogSrc, blogDest)
+
+        generateRssFeed()
       },
     },
   ],
@@ -265,4 +285,72 @@ async function optimizeAndCopy(src: string, dest: string) {
       }
     }
   }
+}
+
+function generateRssFeed() {
+  const configPath = path.resolve(__dirname, 'portfolio.config.json')
+  if (!fs.existsSync(configPath)) return
+
+  const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'))
+  if (!config.blog?.enabled) return
+
+  const blogDir = path.resolve(__dirname, 'blog')
+  if (!fs.existsSync(blogDir)) return
+
+  const posts: { title: string; excerpt: string; date: string; slug: string }[] = []
+
+  for (const entry of fs.readdirSync(blogDir, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue
+    const postJsonPath = path.join(blogDir, entry.name, 'post.json')
+    if (!fs.existsSync(postJsonPath)) continue
+
+    try {
+      const post = JSON.parse(fs.readFileSync(postJsonPath, 'utf-8'))
+      if (post.draft) continue
+      posts.push({
+        title: post.title || entry.name,
+        excerpt: post.excerpt || '',
+        date: post.date || '',
+        slug: entry.name,
+      })
+    } catch {
+      // skip malformed post.json
+    }
+  }
+
+  posts.sort((a, b) => (b.date || '').localeCompare(a.date || ''))
+
+  const siteName = config.site?.name || 'Portfolio'
+  const basePath = process.env.BASE_PATH || '/'
+  const siteUrl = process.env.SITE_URL || `https://example.com${basePath}`
+
+  const escXml = (s: string) =>
+    s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+
+  const items = posts
+    .map(
+      (p) => `    <item>
+      <title>${escXml(p.title)}</title>
+      <link>${siteUrl}blog/${p.slug}</link>
+      <guid>${siteUrl}blog/${p.slug}</guid>
+      <description>${escXml(p.excerpt)}</description>${p.date ? `\n      <pubDate>${new Date(p.date + 'T00:00:00').toUTCString()}</pubDate>` : ''}
+    </item>`,
+    )
+    .join('\n')
+
+  const rss = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>${escXml(siteName)} — Blog</title>
+    <link>${siteUrl}blog</link>
+    <description>${escXml(siteName)} blog feed</description>
+    <atom:link href="${siteUrl}feed.xml" rel="self" type="application/rss+xml" />
+${items}
+  </channel>
+</rss>
+`
+
+  const distDir = path.resolve(__dirname, 'dist')
+  fs.mkdirSync(distDir, { recursive: true })
+  fs.writeFileSync(path.join(distDir, 'feed.xml'), rss)
 }

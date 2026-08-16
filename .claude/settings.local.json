@@ -56,7 +56,14 @@
       "Bash(mv .prettierrc web/)",
       "Bash(mv .prettierignore web/)",
       "Bash(mv .gitattributes web/)",
-      "Bash(xargs grep:*)"
+      "Bash(xargs grep:*)",
+      "Bash(ls web/blog/)",
+      "Bash(ls web/portfolio/)",
+      "Bash(ls web/src/pages/)",
+      "Bash(ls web/src/components/PostCard/)",
+      "Bash(ls web/src/components/MarkdownRenderer/)",
+      "Bash(tasklist)",
+      "Bash(taskkill:*)"
     ],
     "deny": [
       "Bash(rm -rf:*)",

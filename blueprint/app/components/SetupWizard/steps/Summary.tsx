@@ -25,6 +25,9 @@ export default function Summary({ formData, goToStep, onSave }: any) {
         project: formData.project,
         navigation: formData.navigation,
       },
+      blog: {
+        enabled: formData.blogEnabled,
+      },
       store: {
         enabled: false,
         provider: 'stripe',
@@ -125,9 +128,17 @@ export default function Summary({ formData, goToStep, onSave }: any) {
       </div>
 
       <div className={styles.summarySection}>
+        <span className={styles.summaryLabel}>Features</span>
+        <span className={styles.summaryValue}>
+          {formData.blogEnabled ? 'Blog' : 'None'}
+        </span>
+        <button className={styles.summaryEdit} onClick={() => goToStep(6)}>Edit</button>
+      </div>
+
+      <div className={styles.summarySection}>
         <span className={styles.summaryLabel}>Deploy</span>
         <span className={styles.summaryValue}>{formData.deployment}</span>
-        <button className={styles.summaryEdit} onClick={() => goToStep(6)}>Edit</button>
+        <button className={styles.summaryEdit} onClick={() => goToStep(7)}>Edit</button>
       </div>
 
       <button
