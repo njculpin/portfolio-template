@@ -1,0 +1,95 @@
+.markdown {
+  max-width: 720px;
+  margin: 0 auto;
+  font-size: var(--font-size-base);
+  line-height: 1.8;
+  color: var(--text-primary);
+}
+
+.markdown h1 {
+  font-family: var(--font-family-heading);
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  margin: var(--spacing-2xl) 0 var(--spacing-md);
+  line-height: 1.2;
+}
+
+.markdown h2 {
+  font-family: var(--font-family-heading);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  margin: var(--spacing-2xl) 0 var(--spacing-md);
+  line-height: 1.3;
+}
+
+.markdown h3 {
+  font-family: var(--font-family-heading);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  margin: var(--spacing-xl) 0 var(--spacing-sm);
+  line-height: 1.3;
+}
+
+.markdown p {
+  margin-bottom: var(--spacing-md);
+}
+
+.markdown img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius-sm, 4px);
+  margin: var(--spacing-lg) 0;
+}
+
+.markdown a {
+  color: var(--text-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.markdown a:hover {
+  opacity: 0.8;
+}
+
+.markdown blockquote {
+  border-left: 3px solid var(--text-accent);
+  padding-left: var(--spacing-md);
+  color: var(--text-secondary);
+  font-style: italic;
+  margin: var(--spacing-lg) 0;
+}
+
+.markdown ul {
+  list-style: disc;
+  padding-left: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
+}
+
+.markdown li {
+  margin-bottom: var(--spacing-xs);
+}
+
+.markdown pre {
+  background: var(--bg-secondary, rgba(0, 0, 0, 0.05));
+  border-radius: var(--radius-sm, 4px);
+  padding: var(--spacing-md);
+  overflow-x: auto;
+  margin: var(--spacing-lg) 0;
+}
+
+.markdown code {
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 0.9em;
+}
+
+.markdown :not(pre) > code {
+  background: var(--bg-secondary, rgba(0, 0, 0, 0.05));
+  padding: 2px 6px;
+  border-radius: var(--radius-sm, 4px);
+}
+
+.markdown hr {
+  border: none;
+  border-top: 1px solid var(--border-color, rgba(0, 0, 0, 0.1));
+  margin: var(--spacing-2xl) 0;
+}

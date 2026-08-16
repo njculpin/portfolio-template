@@ -27,6 +27,7 @@ export default function Sidebar() {
 
   const links = [
     { to: '/', label: 'Work' },
+    ...(config.blog?.enabled ? [{ to: '/blog', label: 'Blog' }] : []),
     ...(config.store?.enabled ? [{ to: '/shop', label: 'Shop' }] : []),
     { to: '/about', label: 'About' },
   ]

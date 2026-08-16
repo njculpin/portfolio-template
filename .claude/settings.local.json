@@ -55,7 +55,8 @@
       "Bash(mv package-lock.json web/)",
       "Bash(mv .prettierrc web/)",
       "Bash(mv .prettierignore web/)",
-      "Bash(mv .gitattributes web/)"
+      "Bash(mv .gitattributes web/)",
+      "Bash(xargs grep:*)"
     ],
     "deny": [
       "Bash(rm -rf:*)",

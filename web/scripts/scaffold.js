@@ -264,6 +264,16 @@ function scaffoldFull(config) {
     copyDir(path.join(storeBase, 'config'), path.join(WEB, 'src', 'config'))
   }
 
+  // 4b. Blog feature
+  const blogEnabled = config.blog?.enabled === true
+  if (blogEnabled) {
+    const blogBase = path.join(BLUEPRINT, 'features', 'blog')
+    copyDir(path.join(blogBase, 'pages'), path.join(WEB, 'src', 'pages'))
+    copyDir(path.join(blogBase, 'components'), path.join(WEB, 'src', 'components'))
+    copyDir(path.join(blogBase, 'hooks'), path.join(WEB, 'src', 'hooks'))
+    copyDir(path.join(blogBase, 'config'), path.join(WEB, 'src', 'config'))
+  }
+
   // 5. Homepage layout variants
   const homepageVariant = config.layout?.homepage || 'grid'
   const homepageName = VARIANT_NAMES[homepageVariant] || 'Grid'
@@ -347,10 +357,21 @@ function scaffoldFull(config) {
     )
   }
 
+  // 9b. Default blog content
+  if (blogEnabled) {
+    const blogDir = path.join(WEB, 'blog')
+    if (!fs.existsSync(blogDir)) {
+      copyDir(
+        path.join(BLUEPRINT, 'defaults', 'blog'),
+        blogDir,
+      )
+    }
+  }
+
   // 10. Generate App.tsx
   writeFile(
     path.join(WEB, 'src', 'App.tsx'),
-    generateAppTsx(config, storeEnabled),
+    generateAppTsx(config, storeEnabled, blogEnabled),
   )
 
   // 11. Generate ThumbnailGrid.tsx
@@ -409,7 +430,7 @@ function scaffoldFull(config) {
 // Code generators
 // ---------------------------------------------------------------------------
 
-function generateAppTsx(config, storeEnabled) {
+function generateAppTsx(config, storeEnabled, blogEnabled) {
   const imports = [
     `import { BrowserRouter, Routes, Route } from 'react-router'`,
     `import { ConfigProvider, useConfig } from '@/hooks/useConfig'`,
@@ -426,8 +447,17 @@ function generateAppTsx(config, storeEnabled) {
     imports.push(`import ProductPage from '@/pages/ProductPage'`)
   }
 
+  if (blogEnabled) {
+    imports.push(`import BlogPage from '@/pages/BlogPage'`)
+    imports.push(`import BlogPostPage from '@/pages/BlogPostPage'`)
+  }
+
   const storeRoutes = storeEnabled
     ? `\n            <Route path="/shop" element={<ShopPage />} />\n            <Route path="/shop/:slug" element={<ProductPage />} />`
+    : ''
+
+  const blogRoutes = blogEnabled
+    ? `\n            <Route path="/blog" element={<BlogPage />} />\n            <Route path="/blog/:slug" element={<BlogPostPage />} />`
     : ''
 
   return `${imports.join('\n')}
@@ -443,7 +473,7 @@ function AppRoutes() {
     <Routes>
       <Route element={<PageLayout />}>
         <Route index element={<HomePage />} />
-        <Route path="/project/:slug" element={<ProjectPage />} />${storeRoutes}
+        <Route path="/project/:slug" element={<ProjectPage />} />${blogRoutes}${storeRoutes}
         <Route path="/about" element={<AboutPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
@@ -527,6 +557,7 @@ import styles from './Navigation.module.css'
 
 export default function Navigation() {
   const { config } = useConfig()
+  const blogEnabled = config.blog?.enabled
   const storeEnabled = config.store?.enabled
 
   return (
@@ -538,6 +569,11 @@ export default function Navigation() {
         <NavLink to="/" className={({ isActive }) => isActive ? styles.active : ''}>
           Work
         </NavLink>
+        {blogEnabled && (
+          <NavLink to="/blog" className={({ isActive }) => isActive ? styles.active : ''}>
+            Blog
+          </NavLink>
+        )}
         <NavLink to="/about" className={({ isActive }) => isActive ? styles.active : ''}>
           About
         </NavLink>

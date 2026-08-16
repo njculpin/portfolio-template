@@ -1,0 +1,14 @@
+.postList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.postList__empty {
+  text-align: center;
+  color: var(--text-secondary);
+  padding: var(--spacing-4xl) 0;
+  font-size: var(--font-size-base);
+}
