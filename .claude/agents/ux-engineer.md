@@ -29,12 +29,11 @@ When the artist asks a UX question or describes what they want their site to fee
 
 ### 2. Component & Theme Troubleshooting
 
-When the artist reports a visual bug or something not looking right:
+When the artist reports a bug, visual issue, or something not working:
 
-- Read the relevant component source in `src/components/` and its CSS Module.
-- Read the active design tokens in `src/tokens/` and the generated `src/styles/tokens.css`.
-- Check `portfolio.config.json` for layout/navigation settings that may affect rendering.
-- Identify the root cause and fix it. Explain what went wrong in one sentence.
+- Run `/debug` to triage, diagnose, and fix the issue.
+- The debug skill handles build errors, runtime crashes, visual bugs, behavior issues, content problems, and config mismatches.
+- If the issue is purely a UX/design concern (not a bug), handle it directly with your UX expertise instead.
 
 ### 3. Code Implementation
 
@@ -72,27 +71,29 @@ If any of these are problematic, flag it proactively even if the artist didn't a
 ## Project Architecture Reference
 
 ```
-portfolio.config.json        -- Site metadata, layout choices, deployment target
-src/
-  components/
-    About/                   -- Bio, social links
-    Footer/                  -- Site footer
-    Gallery/                 -- Project detail media display (Grid, Justify, Freeform, Slideshow)
-    MediaViewer/             -- Lightbox/viewer for images and video
-    Navigation/              -- Nav bar with variants (Sidebar, Overlay, default Topbar)
-    PageTransition/          -- Route transition animation
-    ProjectDetail/           -- Project page layout (Scroll, Slideshow, SplitView)
-    TagFilter/               -- Tag-based project filtering
-    ThumbnailGrid/           -- Homepage project grid (Grid, Masonry, Justify, Columnized)
-  hooks/                     -- useConfig, useProjects, useFilteredProjects, etc.
-  layouts/                   -- PageLayout wrapper
-  pages/                     -- HomePage, ProjectPage, AboutPage, NotFoundPage
-  styles/                    -- global.css, reset.css, tokens.css (generated)
-  tokens/
-    global/                  -- colors, typography, spacing, breakpoints
-    semantic/                -- theme mappings (surface, text colors)
-    presets/                 -- editorial, minimal, brutalist
-portfolio/                   -- Project content folders with assets and project.json
+web/                             -- The artist's website (work here)
+  portfolio.config.json          -- Site metadata, layout choices, deployment target
+  src/
+    components/                  -- React components (scaffolded from blueprint)
+    hooks/                       -- useConfig, useProjects, useFilteredProjects, etc.
+    layouts/                     -- PageLayout wrapper
+    pages/                       -- HomePage, ProjectPage, AboutPage, NotFoundPage
+    styles/                      -- global.css, reset.css, tokens.css (generated)
+    tokens/
+      global/                    -- colors, typography, spacing, breakpoints
+      semantic/                  -- theme mappings (surface, text colors)
+  portfolio/                     -- Project content folders with assets and project.json
+  store/                         -- Product folders (if store enabled)
+  scripts/scaffold.js            -- Scaffold logic (copies from blueprint)
+
+blueprint/                       -- All available parts (read-only reference)
+  app/                           -- Core components, pages, hooks, config
+  features/store/                -- Store feature (Cart, ProductCard, etc.)
+  layouts/                       -- Layout variants (homepage, project, navigation, gallery)
+  deployment/                    -- Platform configs (vercel, netlify, github-pages)
+  checkout/                      -- Payment providers (stripe, shopify)
+  tokens/                        -- Design token sources and presets
+  defaults/                      -- Default config and sample projects
 ```
 
 ## Communication Style

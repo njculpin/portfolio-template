@@ -1,56 +1,64 @@
 # Portfolio Template
 
-A self-hosted portfolio website template for artists and designers. Configured via Claude Code — no drag-and-drop editor needed.
+A self-hosted portfolio website for artists and designers. Set up through a browser wizard, customize with Claude Code.
 
 ## Quick Start
 
 ```bash
+cd web
 npm install
 npm run dev
 ```
 
-Then run `/setup-portfolio` in Claude Code to configure your site.
+Your browser opens with a setup wizard. Fill in your name, pick a layout, choose a theme — your portfolio is ready in minutes.
 
-## Configure with Claude
+## Project Structure
 
-### `/setup-portfolio`
+```
+blueprint/    All available components, layouts, and integrations
+web/          Your website — this is where you work
+```
 
-Initial setup. Claude asks for your name, bio, contact info, social links, and layout preferences.
+`blueprint/` is the parts shelf. The setup wizard pulls what you need into `web/`. After setup, `web/` is a standard Vite project you fully own.
+
+## After Setup
+
+The wizard gives you these commands to run in Claude Code:
 
 ### `/add-project`
 
-Add a new portfolio project. Claude creates the folder — you drop in your files.
+Add a portfolio project. Claude creates the folder — you drop in your files.
 
 ### `/theme`
 
 Customize colors, fonts, and spacing.
 
+### `/setup-shop`
+
+Sell prints, originals, or digital downloads through Stripe or Shopify.
+
 ### `/deploy`
 
-Deploy your site to Vercel, Netlify, or GitHub Pages.
+Put your site live on Vercel, Netlify, or GitHub Pages.
 
 ## Adding Projects
 
 Drop files in a folder. That's it.
 
 ```
-portfolio/
+web/portfolio/
   my-project/
-    cover.jpg              ← homepage thumbnail (optional)
+    cover.jpg              <- homepage thumbnail (auto-discovered)
     assets/
-      01-hero.jpg          ← auto-discovered, sorted by filename
+      01-hero.jpg          <- sorted by filename
       02-detail.png
       03-process.mp4
-    project.json           ← optional metadata
+    project.json           <- optional metadata
 ```
 
-**What's automatic:**
+Media files are auto-discovered. Cover falls back to the first image. Title comes from the folder name.
 
-- Media files in `assets/` are discovered and displayed in filename order
-- Cover is discovered from `cover.{jpg,png,webp,...}` or falls back to the first image
-- Title is generated from the folder name if no `project.json` exists
-
-**Optional `project.json`** — add any of these fields:
+Optional `project.json`:
 
 ```json
 {
@@ -63,37 +71,16 @@ portfolio/
 }
 ```
 
-- `draft: true` hides the project from the homepage
-- `order` controls homepage sort order (lower numbers first)
-- To add captions or custom alt text, add a `media` array that overrides auto-discovery
-
 Supported formats: jpg, png, webp, gif, avif (images), mp4, webm (video)
 
 ## Layout Options
 
-### Homepage
+**Homepage:** grid, masonry, columnized, justify
 
-- **grid** — Uniform thumbnail grid
-- **masonry** — Pinterest-style staggered layout
-- **columnized** — Magazine-style 3-column with captions
-- **justify** — Packed rows filling full width
+**Project pages:** scroll, slideshow, splitview
 
-### Project Pages
-
-- **scroll** — Vertical scroll with reveal animations
-- **slideshow** — Fullscreen slides with keyboard navigation
-- **splitview** — Media alongside sticky project info
-
-### Navigation
-
-- **topbar** — Horizontal navigation bar
-- **sidebar** — Fixed vertical sidebar
-- **overlay** — Hamburger menu with fullscreen overlay
+**Navigation:** topbar, sidebar, overlay
 
 ## Tech Stack
 
-- Vite + React + TypeScript
-- BEM CSS + CSS Modules
-- CSS Custom Properties (design tokens via Style Dictionary)
-- Motion (animations and page transitions)
-- React Router (client-side routing)
+Vite, React, TypeScript, CSS Modules, Style Dictionary, Motion, React Router
