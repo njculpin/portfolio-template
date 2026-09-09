@@ -39,6 +39,23 @@ export default defineConfig({
         server.middlewares.use('/__api/complete-setup', (req, res, next) => {
           if (req.method !== 'POST') return next()
 
+          // Reported as newline-delimited JSON so the wizard can show which step
+          // is running rather than staring at a frozen screen. The final line is
+          // the result: { ok, mode } or { error }.
+          res.writeHead(200, {
+            'Content-Type': 'application/x-ndjson',
+            'Cache-Control': 'no-cache',
+          })
+          const send = (payload: Record<string, unknown>) =>
+            res.write(JSON.stringify(payload) + '\n')
+
+          // The work between steps is synchronous, so without yielding here the
+          // whole progress report would flush in one go at the very end.
+          const step = async (stage: string) => {
+            send({ stage })
+            await new Promise((resolve) => setImmediate(resolve))
+          }
+
           readRequestBody(req)
             .then(async (body) => {
               const { config, preset } = JSON.parse(body) as {
@@ -46,29 +63,61 @@ export default defineConfig({
                 preset?: string
               }
 
+              await step('config')
               saveConfig(config)
 
               // Scaffold first: it wipes web/src and re-copies the token sources,
               // so the preset has to be applied on top of the fresh tree. Tokens
               // are always rebuilt afterwards — src/styles/tokens.css is generated
               // and would otherwise be missing from the new site.
+              await step('build')
               const { scaffold } = await import('./scripts/scaffold.js')
               const result = scaffold()
 
+              await step('theme')
               if (preset) applyPreset(preset)
+
+              await step('styles')
               await rebuildTokens()
 
               logNextSteps(result.message)
-
-              res.writeHead(200, { 'Content-Type': 'application/json' })
-              res.end(JSON.stringify({ ok: true, mode: result.mode }))
+              send({ ok: true, mode: result.mode })
+              res.end()
             })
             .catch((err) => {
               console.error('[setup] Failed to complete setup:', err)
-              res.writeHead(500, { 'Content-Type': 'application/json' })
-              res.end(JSON.stringify({ error: String(err) }))
+              // Headers are already out, so the failure travels as a final line.
+              send({ error: String(err) })
+              res.end()
             })
         })
+      },
+    },
+    {
+      name: 'reload-on-scaffold',
+      configureServer(server) {
+        // Scaffolding and resetting rewrite src/ wholesale, and App.tsx flips
+        // between the wizard and the real site. HMR cannot patch across that: a
+        // browser left on the old page keeps rendering modules that no longer
+        // exist on disk. Force those pages to reload instead.
+        const triggers = [
+          path.resolve(__dirname, 'portfolio.config.json'),
+          path.resolve(__dirname, 'src/App.tsx'),
+        ]
+
+        let queued: NodeJS.Timeout | undefined
+        const reload = (file: string) => {
+          if (!triggers.includes(path.resolve(file))) return
+          // The scaffold touches both triggers in quick succession.
+          clearTimeout(queued)
+          queued = setTimeout(() => {
+            server.ws.send({ type: 'full-reload', path: '*' })
+          }, 50)
+        }
+
+        server.watcher.on('add', reload)
+        server.watcher.on('change', reload)
+        server.watcher.on('unlink', reload)
       },
     },
     {

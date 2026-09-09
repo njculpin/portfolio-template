@@ -1,5 +1,6 @@
 import fs from 'fs'
 import path from 'path'
+import { execFileSync } from 'child_process'
 import { fileURLToPath } from 'url'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -638,30 +639,36 @@ import { useConfig } from '@/hooks/useConfig'
 import CartButton from '@/components/Cart/CartButton'
 import styles from './Navigation.module.css'
 
+function linkClass({ isActive }: { isActive: boolean }) {
+  return isActive
+    ? [styles.navigation__link, styles['navigation__link--active']].join(' ')
+    : styles.navigation__link
+}
+
 export default function Navigation() {
   const config = useConfig()
   const blogEnabled = config.blog?.enabled
   const storeEnabled = config.store?.enabled
 
   return (
-    <nav className={styles.topbar}>
-      <NavLink to="/" className={styles.logo}>
+    <nav className={styles.navigation}>
+      <NavLink to="/" className={styles.navigation__brand}>
         {config.site.name}
       </NavLink>
-      <div className={styles.links}>
-        <NavLink to="/" className={({ isActive }) => isActive ? styles.active : ''}>
+      <div className={styles.navigation__links}>
+        <NavLink to="/" end className={linkClass}>
           Work
         </NavLink>
         {blogEnabled && (
-          <NavLink to="/blog" className={({ isActive }) => isActive ? styles.active : ''}>
+          <NavLink to="/blog" className={linkClass}>
             Blog
           </NavLink>
         )}
-        <NavLink to="/about" className={({ isActive }) => isActive ? styles.active : ''}>
+        <NavLink to="/about" className={linkClass}>
           About
         </NavLink>
         {storeEnabled && (
-          <NavLink to="/shop" className={({ isActive }) => isActive ? styles.active : ''}>
+          <NavLink to="/shop" className={linkClass}>
             Shop
           </NavLink>
         )}
@@ -864,6 +871,16 @@ export function scaffold() {
   }
 }
 
+// src/styles/tokens.css is generated from the token sources the scaffold just
+// copied. Scaffolding without rebuilding it leaves global.css importing a file
+// that does not exist, which fails the whole stylesheet.
+export function buildTokens() {
+  execFileSync(process.execPath, ['style-dictionary.config.js'], {
+    cwd: WEB,
+    stdio: 'inherit',
+  })
+}
+
 // CLI entry point
 const isMain = process.argv[1] && path.resolve(process.argv[1]) === path.resolve(__filename)
 if (isMain) {
@@ -872,6 +889,7 @@ if (isMain) {
     // Already scaffolded — skip
   } else {
     const result = scaffold()
+    buildTokens()
     console.log(result.message)
   }
 }

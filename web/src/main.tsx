@@ -8,3 +8,8 @@ createRoot(document.getElementById('root')!).render(
     <App />
   </StrictMode>,
 )
+
+// Clear the boot spinner from index.html once the app has painted.
+requestAnimationFrame(() => {
+  document.getElementById('boot')?.remove()
+})

@@ -7,6 +7,7 @@ import {
   destroySandbox,
   loadScaffold,
   readConfig,
+  writeConfig,
   webPath,
   rootPath,
   exists,
@@ -32,11 +33,85 @@ function freePort() {
   })
 }
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+
+async function waitFor(predicate, timeoutMs = 10_000) {
+  const deadline = Date.now() + timeoutMs
+  while (Date.now() < deadline) {
+    if (predicate()) return true
+    await sleep(100)
+  }
+  return false
+}
+
+/** The endpoint answers in newline-delimited JSON: a line per step, then the result. */
+function parseStream(text) {
+  return text
+    .split('\n')
+    .filter((line) => line.trim())
+    .map((line) => JSON.parse(line))
+}
+
+describe('an open browser is told to reload when the site is rebuilt', () => {
+  let sandbox
+  let server
+  let socket
+  let received
+
+  before(async () => {
+    sandbox = createSandbox('reload')
+    const { scaffold } = await loadScaffold(sandbox)
+    scaffold() // wizard-only, as a browser sitting on the wizard would have
+
+    const port = await freePort()
+    const { createServer } = await import('vite')
+    server = await createServer({
+      root: sandbox.web,
+      configFile: webPath(sandbox, 'vite.config.ts'),
+      server: { host: '127.0.0.1', port, strictPort: true },
+      logLevel: 'silent',
+    })
+    await server.listen()
+
+    // Connect the way a browser tab does.
+    received = []
+    socket = new WebSocket(`ws://127.0.0.1:${port}`, 'vite-hmr')
+    socket.onmessage = (event) => received.push(JSON.parse(event.data))
+    await new Promise((resolve) => {
+      socket.onopen = resolve
+    })
+
+    // Give the file watcher a moment to finish its initial scan, otherwise the
+    // rebuild lands before it is listening.
+    await sleep(1000)
+
+    // Now rebuild into the real site, as submitting the wizard does.
+    writeConfig(sandbox)
+    scaffold()
+    await waitFor(() => received.some((m) => m.type === 'full-reload'))
+  })
+
+  after(async () => {
+    socket?.close()
+    await server?.close()
+    destroySandbox(sandbox)
+  })
+
+  it('sends a full reload rather than trying to hot-patch the swap', () => {
+    // src/ is replaced wholesale and App.tsx flips between the wizard and the
+    // site. HMR cannot patch that, and a browser left alone keeps showing
+    // modules that no longer exist — which is what made reset look broken.
+    const reloads = received.filter((m) => m.type === 'full-reload')
+    assert.ok(reloads.length > 0, 'the open page is told to reload')
+  })
+})
+
 describe('submitting the wizard through the dev server', () => {
   let sandbox
   let server
   let port
   let response
+  let messages
 
   before(async () => {
     sandbox = createSandbox('setup-api')
@@ -82,6 +157,8 @@ describe('submitting the wizard through the dev server', () => {
         preset: 'editorial',
       }),
     })
+
+    messages = parseStream(await response.text())
   })
 
   after(async () => {
@@ -89,9 +166,14 @@ describe('submitting the wizard through the dev server', () => {
     destroySandbox(sandbox)
   })
 
-  it('answers with the full-site mode', async () => {
+  it('answers with the full-site mode', () => {
     assert.equal(response.status, 200)
-    assert.deepEqual(await response.json(), { ok: true, mode: 'full' })
+    assert.deepEqual(messages.at(-1), { ok: true, mode: 'full' })
+  })
+
+  it('reports each step as it happens, so the wizard can show progress', () => {
+    const stages = messages.filter((m) => m.stage).map((m) => m.stage)
+    assert.deepEqual(stages, ['config', 'build', 'theme', 'styles'])
   })
 
   it('saves the config the wizard collected', () => {

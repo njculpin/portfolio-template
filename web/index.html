@@ -5,9 +5,49 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>Portfolio</title>
+    <style>
+      /* Shown until React mounts, so a cold load is never a blank white page.
+         Self-contained: the stylesheet has not loaded at this point. */
+      #boot {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #fafafa;
+      }
+      #boot span {
+        width: 28px;
+        height: 28px;
+        border: 3px solid rgba(0, 0, 0, 0.12);
+        border-top-color: rgba(0, 0, 0, 0.42);
+        border-radius: 50%;
+        animation: boot-spin 0.9s linear infinite;
+      }
+      @keyframes boot-spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      @media (prefers-color-scheme: dark) {
+        #boot {
+          background: #111827;
+        }
+        #boot span {
+          border-color: rgba(255, 255, 255, 0.14);
+          border-top-color: rgba(255, 255, 255, 0.5);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #boot span {
+          animation-duration: 3s;
+        }
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>
+    <div id="boot"><span></span></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

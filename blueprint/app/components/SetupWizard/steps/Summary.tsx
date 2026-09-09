@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import styles from '../SetupWizard.module.css';
 import { DOMAIN_LABELS } from './CreativeDomain';
+import BuildingScreen, { BUILD_STAGES } from './BuildingScreen';
 import type { WizardFormData } from '../types';
 
 type SummaryProps = {
@@ -8,12 +9,31 @@ type SummaryProps = {
   goToStep: (step: number) => void;
 };
 
+// Writing the config and deleting the wizard both make Vite want to reload the
+// page. Mid-build that lands on a half-written site — the white screen. The
+// wizard reloads itself once, deliberately, when the build is finished.
+// Returns a release function: if the build fails we are staying on this page,
+// and it must be able to reload normally again.
+function holdTheReload() {
+  const hot = import.meta.hot;
+  if (!hot) return () => {};
+
+  const block = () => {
+    throw new Error('[setup] build in progress — reload deferred');
+  };
+  hot.on('vite:beforeFullReload', block);
+  return () => hot.off('vite:beforeFullReload', block);
+}
+
 export default function Summary({ formData, goToStep }: SummaryProps) {
   const [saving, setSaving] = useState(false);
+  const [stageIndex, setStageIndex] = useState(0);
   const [error, setError] = useState('');
 
   const handleSave = async () => {
+    const releaseTheReload = holdTheReload();
     setSaving(true);
+    setStageIndex(0);
     setError('');
 
     const config = {
@@ -48,26 +68,72 @@ export default function Summary({ formData, goToStep }: SummaryProps) {
     };
 
     try {
-      // One request: saves the config, applies the theme preset, and scaffolds the
-      // real site. When it returns, the wizard no longer exists on disk.
+      // One request: saves the config, applies the theme preset, and scaffolds
+      // the real site. It streams a line per step so the screen can keep up.
       const response = await fetch('/__api/complete-setup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ config, preset: formData.themePreset }),
       });
 
-      if (!response.ok) {
-        throw new Error(await response.text());
+      if (!response.ok || !response.body) {
+        throw new Error(`The dev server answered with ${response.status}.`);
       }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffered = '';
+      let finished = false;
+
+      const handleLine = (line: string) => {
+        if (!line.trim()) return;
+        const message = JSON.parse(line) as { stage?: string; ok?: boolean; error?: string };
+        if (message.error) throw new Error(message.error);
+        if (message.stage) {
+          const index = BUILD_STAGES.findIndex((s) => s.id === message.stage);
+          if (index >= 0) setStageIndex(index);
+        }
+        if (message.ok) finished = true;
+      };
+
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffered += decoder.decode(value, { stream: true });
+        const lines = buffered.split('\n');
+        buffered = lines.pop() || '';
+        lines.forEach(handleLine);
+      }
+      handleLine(buffered);
+
+      if (!finished) {
+        throw new Error('The build stopped before it finished.');
+      }
+
+      setStageIndex(BUILD_STAGES.length);
 
       // Replace rather than push, so Back can't land on the wizard again.
       window.location.replace(import.meta.env.BASE_URL || '/');
     } catch (err) {
       console.error('Failed to save:', err);
-      setError('Something went wrong while building your site — check the dev server output.');
+      releaseTheReload();
+      setError(err instanceof Error ? err.message : String(err));
       setSaving(false);
     }
   };
+
+  if (saving || error) {
+    return (
+      <BuildingScreen
+        stageIndex={stageIndex}
+        error={error}
+        onRetry={() => {
+          setError('');
+          handleSave();
+        }}
+      />
+    );
+  }
 
   const socialDisplay =
     formData.social.length > 0 ? formData.social.map((s) => s.platform).join(', ') : 'None';
@@ -173,15 +239,9 @@ export default function Summary({ formData, goToStep }: SummaryProps) {
         </button>
       </div>
 
-      <button
-        className={`${styles.saveButton} ${saving ? styles.saving : ''}`}
-        onClick={handleSave}
-        disabled={saving}
-      >
-        {saving ? 'Building your site…' : 'Save & Build My Portfolio'}
+      <button className={styles.saveButton} onClick={handleSave}>
+        Save &amp; Build My Portfolio
       </button>
-
-      {error && <p className={styles.saveError}>{error}</p>}
     </div>
   );
 }
